@@ -1,0 +1,37 @@
+name: Auto Bootstrap (Template → Project)
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  bootstrap:
+    if: "!contains(github.event.head_commit.message, '[skip-bootstrap]')"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - id: guard
+        run: |
+          if [ -f .bootstrap.done ]; then echo "skip=true" >> ; fi
+      - if: steps.guard.outputs.skip != 'true'
+        name: Bootstrap Project from Template
+        run: |
+          chmod +x ./bootstrap_python_project_v4.sh
+          export REPO_NAME="${{ github.repository_owner }}/${{ github.repository }}"
+          export PROJECT_NAME="${REPO_NAME#*/}"
+          export NONINTERACTIVE=1
+          ./bootstrap_python_project_v4.sh
+          if [ -d "mcp_server_openai/.git" ]; then rm -rf "mcp_server_openai/.git"; fi
+          rsync -a --delete "mcp_server_openai/" .
+          rm -rf "mcp_server_openai"
+          echo "Bootstrapped on $(date -u +%Y-%m-%dT%H:%M:%SZ)" > .bootstrap.done
+      - if: steps.guard.outputs.skip != 'true'
+        name: Commit and Push Changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "chore: auto-scaffold project via template action"
+          git push

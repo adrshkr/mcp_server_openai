@@ -1,0 +1,54 @@
+name: Regenerate Project
+on:
+  workflow_dispatch:
+    inputs:
+      project_name:
+        description: "New project name (will be slugified)"
+        required: true
+      version_tag:
+        description: "Tag to create after regeneration (e.g., v0.1.0)"
+        required: false
+        default: "v0.1.0"
+      make_release:
+        description: "Create a GitHub Release for this tag?"
+        type: boolean
+        default: true
+
+jobs:
+  regenerate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Clean and Regenerate Scaffold
+        env:
+          PROJECT_NAME: ${{ github.event.inputs.project_name }}
+          NONINTERACTIVE: 1
+          QUIET: 1
+        run: |
+          find . -maxdepth 1 -not -name '.git' -not -name '.github' -not -name 'bootstrap_python_project_v4.sh' -not -name '.' -exec rm -rf {} +
+          chmod +x ./bootstrap_python_project_v4.sh
+          ./bootstrap_python_project_v4.sh
+          rsync -a --delete "mcp_server_openai/" . && rm -rf "mcp_server_openai"
+          echo "Regenerated on $(date -u)" > .bootstrap.done
+      - name: Commit and Push Changes
+        id: commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if ! git diff --quiet; then
+            git add -A
+            git commit -m "chore: regenerate scaffold for '${{ github.event.inputs.project_name }}'"
+            git push
+            echo "did_commit=true" >> 
+          else
+            echo "did_commit=false" >> 
+          fi
+      - name: Create Release
+        if: steps.commit.outputs.did_commit == 'true' && github.event.inputs.make_release == 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.version_tag }}
+          name: Release ${{ github.event.inputs.version_tag }}
+          body: "Automated regeneration for project: ${{ github.event.inputs.project_name }}"

@@ -1,0 +1,62 @@
+[project]
+  name = "mcp_server_openai"
+  version = "0.2.0"
+  description = "FastMCP server with tools, resources, and prompts"
+  readme = "README.md"
+  requires-python = ">=3.10"
+  dependencies = [
+    "mcp[cli]",
+    "httpx",
+    "pydantic",
+    "PyYAML",
+    "python-pptx",
+    "starlette>=0.37",
+    "uvicorn[standard]>=0.29",
+  ]
+
+[tool.pytest.ini_options]
+  addopts = "-q"
+  pythonpath = ["src"]
+  testpaths = ["tests"]
+
+[build-system]
+  requires = ["setuptools","wheel"]
+  build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+  package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+  where = ["src"]
+
+
+[project.scripts]
+mcp_server_openai = "mcp_server_openai.__main__:main"
+
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/mcp_server_openai"]
+
+[tool.black]
+line-length = 120
+target-version = ["py312"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+exclude = [".venv", "venv", "build", "dist"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "C4"]
+
+[dependency-groups]
+dev = [
+    "black>=25.1.0",
+    "colorama>=0.4.6",
+    "hatch>=1.14.1",
+    "mypy>=1.17.1",
+    "pre-commit>=4.3.0",
+    "pytest>=8.4.1",
+    "pytest-cov>=6.2.1",
+    "ruff>=0.12.9",
+]
