@@ -135,6 +135,7 @@ Optional `client_id` selects per-client defaults (see Config).
 ```json
 { "topic": "LLMs", "client_id": "acme" }
 ```
+Note: Prompts are file-based (Jinja2) and can merge per-client variables from MCP_CONFIG_JSON or MCP_CONFIG_PATH (YAML). See config.example.yaml.
 
 ---
 

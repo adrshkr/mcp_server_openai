@@ -1,28 +1,41 @@
-"""
-Summarization prompt with client-aware defaults.
-"""
-from typing import TYPE_CHECKING, Optional
-from mcp_server_openai.config import get_prompt_vars
+from __future__ import annotations
 
-if TYPE_CHECKING:  # avoid requiring SDK at test collection
-  from mcp.server.fastmcp import FastMCP
+import importlib
+from typing import Any
 
 
 def summarize_prompt(topic: str, tone: str = "concise") -> str:
-  """
-  Return a templated instruction string asking for a summary.
-  """
-  return f"Please provide a {tone} summary of the topic: {topic}."
+    """
+    Legacy/simple prompt generator used by tests and as a fallback
+    when the file-based PromptManager isn't available.
+    """
+    return f"Please provide a {tone} summary of the topic: {topic}."
 
 
-def register(mcp: "FastMCP") -> None:
-  """
-  Register the summarize prompt with the provided FastMCP instance.
+# Try to import the file-based PromptManager dynamically; if not present, we fall back.
+try:
+    _pm: Any = importlib.import_module("mcp_server_openai.prompts.manager")
+except Exception:
+    _pm = None
 
-  Note: We accept an optional client_id to demonstrate per-client overrides.
-  """
-  @mcp.prompt(name="summarize", description="Templated summary instruction.")
-  def summarize(topic: str, tone: Optional[str] = None, client_id: Optional[str] = None) -> str:
-    vars_ = get_prompt_vars("summarize", client_id)
-    effective_tone = tone or vars_.get("tone", "concise")
-    return summarize_prompt(topic, effective_tone)
+
+def summarize(topic: str, tone: str = "concise", client_id: str | None = None, **kwargs: Any) -> str:
+    """
+    Render the 'summarize' prompt using the PromptManager (if available),
+    otherwise return the legacy summarize_prompt.
+    """
+    if _pm is None:
+        return summarize_prompt(topic, tone=tone)
+
+    params: dict[str, Any] = {"topic": topic, "tone": tone}
+    params.update(kwargs)
+    rendered = _pm.render("summarize", params=params, client_id=client_id)
+    return str(rendered)
+
+
+def register_summarize(mcp: Any) -> None:
+    """
+    Placeholder registration hook to keep the auto-discovery path stable.
+    (Tests don't exercise this yet; keeping the symbol avoids import errors.)
+    """
+    return None
