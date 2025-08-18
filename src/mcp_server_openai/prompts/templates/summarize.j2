@@ -1,0 +1,10 @@
+Summarize the topic "{{ topic }}" for a {{ audience | default('general') }} audience in a {{ tone | default('concise') }} tone.
+
+Constraints:
+- Provide {{ bullets_min | default(4) }}–{{ bullets_max | default(6) }} bullet points.
+- Be specific and actionable; avoid fluff.
+- Highlight key facts, takeaways, and any concrete next steps if relevant.
+
+Output format:
+- Use plain text bullets, one per line, prefixed with "- ".
+- Do not add a lead-in sentence or a title; just the bullets.

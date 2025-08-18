@@ -1,120 +1,98 @@
-"""
-Web utility tools.
-
-Provides an async tool to fetch the text content of a URL with robust handling.
-"""
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional
-from pydantic import BaseModel, Field
-import httpx
-import re
 import json
+import re
+from dataclasses import dataclass
+from typing import Any
 
-# Use TYPE_CHECKING to avoid requiring the SDK during test collection
-if TYPE_CHECKING:
-  from mcp.server.fastmcp import FastMCP  # matches the MCP CLI SDK you are using
-
-
-# ---- Structured result model (internal) --------------------------------------
-
-class FetchResult(BaseModel):
-  url: str = Field(..., description="Final (normalized) URL requested")
-  status_code: Optional[int] = None
-  content_type: Optional[str] = None
-  headers: dict[str, str] = {}
-  content_preview: str = ""
-  truncated: bool = False
-  elapsed_ms: Optional[float] = None
-  error: Optional[str] = None
+import httpx
 
 
-# ---- Helpers -----------------------------------------------------------------
-
-def _normalize_url(raw: str) -> str:
-  s = (raw or "").strip()
-  # collapse inner whitespace runs then encode spaces
-  s = re.sub(r"\s+", " ", s).replace(" ", "%20")
-  if not re.match(r"^[a-zA-Z][a-zA-Z0-9+.-]*://", s):
-    s = "https://" + s
-  return s
-
-
-async def fetch_url_content(
-  url: str,
-  timeout: float = 10.0,
-  max_chars: int = 200_000,
-  allow_redirects: bool = True,
-  user_agent: Optional[str] = None,
-) -> FetchResult:
-  """
-  Fetch 'url' and return a structured result. Never raises; errors are returned.
-  """
-  final_url = _normalize_url(url)
-  headers = {}
-  if user_agent:
-    headers["User-Agent"] = user_agent
-
-  try:
-    async with httpx.AsyncClient(timeout=timeout, follow_redirects=allow_redirects, headers=headers) as client:
-      resp = await client.get(final_url)
-      text = resp.text or ""
-      preview = text[:max_chars]
-      subset = {k.lower(): v for k, v in resp.headers.items()
-                if k.lower() in ("content-type", "content-length", "server")}
-      elapsed = float(getattr(resp, "elapsed", 0).total_seconds() * 1000) if getattr(resp, "elapsed", None) else None
-      return FetchResult(
-        url=str(resp.url),
-        status_code=resp.status_code,
-        content_type=resp.headers.get("content-type"),
-        headers=subset,
-        content_preview=preview,
-        truncated=len(text) > max_chars,
-        elapsed_ms=elapsed,
-      )
-  except httpx.HTTPError as e:
-    return FetchResult(url=final_url, error=str(e))
+@dataclass
+class FetchResult:
+    url: str
+    status_code: int
+    headers: dict[str, str]
+    elapsed_ms: float | None
+    content_preview: str
+    truncated: bool
+    error: str | None
 
 
-def flatten_fetch_result(res: FetchResult) -> dict[str, str | int | bool | None]:
-  """Convert FetchResult to a flat dict of primitives (inspector-compatible)."""
-  return {
-    "url": res.url,
-    "status_code": int(res.status_code) if res.status_code is not None else None,
-    "content_type": res.content_type or None,
-    "headers_json": json.dumps(res.headers, ensure_ascii=False),  # stringify nested dict
-    "content_preview": res.content_preview,
-    "truncated": bool(res.truncated),
-    "elapsed_ms": int(res.elapsed_ms) if isinstance(res.elapsed_ms, float) else None,
-    "error": res.error or None,
-  }
+def _normalize_url(url: str) -> str:
+    url = url.strip()
+    if not re.match(r"^https?://", url, flags=re.I):
+        url = "https://" + url
+    # encode spaces minimally for sanity
+    return url.replace(" ", "%20")
 
 
-# ---- MCP registration --------------------------------------------------------
+async def fetch_url_content(url: str, max_preview_bytes: int = 8_192) -> FetchResult:
+    """
+    Fetch a URL over HTTP(S) and return a flattened result suitable for display/logging.
+    """
+    norm = _normalize_url(url)
 
-def register(mcp: "FastMCP") -> None:
-  """
-  Register the web fetching tool on the provided FastMCP instance.
+    try:
+        async with httpx.AsyncClient(timeout=10.0, follow_redirects=True) as client:
+            resp = await client.get(norm)
 
-  IMPORTANT: The MCP inspector only accepts primitive dict values.
-  We therefore flatten the response and stringify complex types.
-  """
-  @mcp.tool(
-    name="web.fetch_url",
-    description="Fetch a URL and return a flat JSON result (status, headers_json, content preview)."
-  )
-  async def fetch_url(
-    url: str,
-    timeout: float = 10.0,
-    max_chars: int = 200_000,
-    allow_redirects: bool = True,
-    user_agent: Optional[str] = None,
-  ) -> dict[str, str | int | bool | None]:
-    res = await fetch_url_content(
-      url=url,
-      timeout=timeout,
-      max_chars=max_chars,
-      allow_redirects=allow_redirects,
-      user_agent=user_agent,
-    )
+        # elapsed can be a timedelta or absent; normalize defensively
+        elapsed_attr: Any = getattr(resp, "elapsed", None)
+        elapsed_ms: float | None = None
+        if elapsed_attr is not None:
+            try:
+                # timedelta.total_seconds()
+                elapsed_ms = float(elapsed_attr.total_seconds() * 1000.0)
+            except Exception:
+                try:
+                    # sometimes libraries stash a raw float seconds
+                    elapsed_ms = float(elapsed_attr) * 1000.0
+                except Exception:
+                    elapsed_ms = None
+
+        raw = resp.text or ""
+        preview = raw[:max_preview_bytes]
+        truncated = len(raw) > len(preview)
+
+        headers = {k.lower(): v for k, v in resp.headers.items()}
+        return FetchResult(
+            url=norm,
+            status_code=int(resp.status_code),
+            headers=headers,
+            elapsed_ms=elapsed_ms,
+            content_preview=preview,
+            truncated=truncated,
+            error=None,
+        )
+    except Exception as exc:
+        return FetchResult(
+            url=norm,
+            status_code=0,
+            headers={},
+            elapsed_ms=None,
+            content_preview="",
+            truncated=False,
+            error=str(exc),
+        )
+
+
+def flatten_fetch_result(res: FetchResult) -> dict[str, Any]:
+    """
+    Flatten FetchResult into a plain dict for tool output.
+    """
+    return {
+        "url": res.url,
+        "status_code": res.status_code,
+        "headers_json": json.dumps(res.headers),
+        "elapsed_ms": res.elapsed_ms,
+        "content_preview": res.content_preview,
+        "truncated": res.truncated,
+        "error": res.error,
+    }
+
+
+# Tool adapter (kept simple for existing tests)
+async def tool_fetch_url(url: str) -> dict[str, Any]:
+    res = await fetch_url_content(url)
     return flatten_fetch_result(res)
