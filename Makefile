@@ -33,6 +33,18 @@ clean:
 run:
 	@uv run mcp_server_openai --name "from Makefile"
 
+run-http:
+	@echo "--- Starting enhanced HTTP server ---"
+	@uv run uvicorn mcp_server_openai.streaming_http:app --host 0.0.0.0 --port 8000 --reload
+
+run-enhanced:
+	@echo "--- Starting enhanced HTTP server with optimizations ---"
+	@uv run python -m mcp_server_openai.enhanced_server --host 0.0.0.0 --port 8000 --reload
+
+run-prod:
+	@echo "--- Starting production HTTP server ---"
+	@uv run python -m mcp_server_openai.enhanced_server --host 0.0.0.0 --port 8000 --workers 4
+
 docker-build:
 	@docker build -t mcp_server_openai:dev .
 
