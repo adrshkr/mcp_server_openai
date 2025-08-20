@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:docs.anthropic.com)",
+      "Bash(claude mcp:*)",
+      "WebSearch",
+      "Bash(npm install:*)",
+      "Bash(git checkout:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(gh pr create:*)",
+      "Bash(python -m pytest tests/test_logging_utils.py -v)",
+      "Bash(python -m pytest tests/test_logging_utils.py::test_backwards_compatibility -v)",
+      "Bash(python -m pytest tests/test_web_tools.py -v -k \"test_fetch_url_content_real_network\")",
+      "Bash(python -m pytest tests/test_web_tools.py -v -x)",
+      "Bash(make:*)",
+      "Bash(uv run:*)",
+      "Bash(git add:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

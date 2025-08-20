@@ -13,6 +13,7 @@ A production-ready FastMCP server implementation using the official MCP SDK. Pro
 - **🎯 Prompts**: Jinja2-based templates with per-client customization
 - **🚀 Dual Interface**: Both stdio and HTTP/SSE modes
 - **📝 Structured Logging**: JSON-formatted request lifecycle tracking
+- **📈 Progress Tracking**: Real-time progress monitoring with ETA calculation and hierarchical support
 - **🐳 Docker Ready**: Containerized deployment support
 
 ---
@@ -26,6 +27,7 @@ A production-ready FastMCP server implementation using the official MCP SDK. Pro
   - [Stdio Mode](#stdio-mode-with-mcp-dev-inspector)
   - [HTTP Mode](#http-mode-with-sse)
 - [API Reference](#-api-reference)
+- [Progress Tracking](#-progress-tracking)
 - [Configuration](#-configuration)
 - [Testing](#-testing)
 - [Docker](#-docker)
@@ -213,6 +215,118 @@ Jinja2-based prompt with client-specific customization.
 
 ---
 
+## 📈 Progress Tracking
+
+The server includes a modern progress tracking system that provides real-time monitoring, percentage tracking, ETA calculation, and hierarchical progress support.
+
+### Key Features
+
+- **Percentage Tracking**: Automatic progress calculation with configurable total steps
+- **ETA Calculation**: Dynamic estimation of completion time based on current progress
+- **Hierarchical Progress**: Parent/child relationships for complex workflows with subtasks
+- **Real-time Events**: Event-driven progress updates with customizable listeners
+- **Context Managers**: Automatic progress tracking with error handling
+- **Thread Safety**: Safe for concurrent operations
+- **JSON Logging Integration**: Seamless integration with structured logging system
+
+### Basic Usage
+
+```python
+from mcp_server_openai.progress import create_progress_tracker
+
+# Create a progress tracker
+tracker = create_progress_tracker("web.fetch_url", "req-123", total_steps=4)
+
+# Manual step tracking
+tracker.step("initialize", {"url": "example.com"})        # 25% complete
+tracker.step("fetch_data", {"status": "downloading"})     # 50% complete
+tracker.update_progress(75.0, "processing_response")      # 75% complete
+tracker.complete("finished", {"status": "success"})      # 100% complete
+```
+
+### Context Managers
+
+```python
+# Automatic step tracking with error handling
+with tracker.step_context("http_request", {"url": "example.com"}):
+    response = await client.get(url)
+    # Progress automatically updated
+
+# Async context manager support
+async with tracker.async_step_context("process_data"):
+    result = await process_large_dataset()
+```
+
+### Hierarchical Progress
+
+```python
+# Create parent tracker
+main_task = create_progress_tracker("data_pipeline", "req-123", total_steps=3)
+
+# Create subtasks
+loader = main_task.create_subtask("data_loading", total_steps=2)
+loader.step("load_config")
+loader.step("load_data")
+loader.complete("data_loaded")
+
+processor = main_task.create_subtask("data_processing")
+processor.update_progress(30.0, "validating")
+processor.update_progress(100.0, "complete")
+
+# Parent progress aggregates children
+aggregated = main_task.get_aggregated_progress()  # Returns combined progress
+```
+
+### Progress Events
+
+Progress tracking emits structured JSON events that integrate with the logging system:
+
+```json
+{
+  "event_type": "progress_update",
+  "tool": "web.fetch_url",
+  "request_id": "req-123",
+  "step": "http_request",
+  "progress_percent": 50.0,
+  "eta_ms": 1245.6,
+  "elapsed_ms": 1230.2,
+  "details": {
+    "progress_id": "uuid-4",
+    "parent_id": null,
+    "url": "https://example.com"
+  },
+  "correlation_id": "trace-456"
+}
+```
+
+### Custom Progress Listeners
+
+```python
+from mcp_server_openai.progress import ProgressListener, ProgressEvent
+
+class CustomProgressListener:
+    def on_progress_update(self, event: ProgressEvent) -> None:
+        # Send to monitoring system, websocket, etc.
+        print(f"Progress: {event.progress_percent}% - {event.step_name}")
+
+# Add custom listener
+tracker.add_listener(CustomProgressListener())
+```
+
+### Backwards Compatibility
+
+The legacy `Progress` class interface is maintained for existing code:
+
+```python
+from mcp_server_openai.progress import Progress
+
+# Legacy interface still works
+progress = Progress("tool_name", "request_id")
+progress.step("step_name", {"detail": "value"})
+```
+
+---
+
 ## ⚙️ Configuration
 
 ### Per-Client Prompt Variables
@@ -379,7 +493,7 @@ src/mcp_server_openai/
 ├── http_server.py           # HTTP/SSE server (Starlette)
 ├── config.py                # YAML/JSON config loader
 ├── logging_utils.py         # Structured JSON logging
-├── progress.py              # Progress tracking utilities
+├── progress.py              # Modern progress tracking with ETA & hierarchical support
 ├── tools/
 │   ├── __init__.py
 │   ├── math_tools.py        # Mathematical operations
@@ -425,12 +539,20 @@ tests/                       # Comprehensive test suite
 - ✅ Cross-platform compatibility (Windows-friendly tests)
 - ✅ Docker containerization support
 
+**Milestone 3.2: Progress Tracking**
+- ✅ Modern progress tracking system with percentage & ETA calculation
+- ✅ Hierarchical progress support for complex workflows
+- ✅ Real-time progress events with customizable listeners
+- ✅ Context manager support for automatic progress tracking
+- ✅ Thread-safe operations and backwards compatibility
+
 **Features:**
 - 🔧 Mathematical operations (`math.add`, `math.sub`)
-- 🌐 Web content fetching (`web.fetch_url`)
+- 🌐 Web content fetching (`web.fetch_url`) with progress tracking
 - 📄 PowerPoint generation (`content.create`)
 - 🎯 Client-specific prompt customization
 - 📊 Health monitoring resources
+- 📈 Real-time progress tracking with ETA calculation
 
 ---
 

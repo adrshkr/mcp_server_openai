@@ -8,7 +8,8 @@ from urllib.parse import quote, urlparse, urlunparse
 
 import httpx
 
-from ..logging_utils import get_logger, log_accept, log_exception, log_progress, log_response
+from ..logging_utils import get_logger, log_accept, log_exception, log_response
+from ..progress import create_progress_tracker
 
 _LOG = get_logger("mcp.tool.web.fetch_url")
 _TOOL = "web.fetch_url"
@@ -51,57 +52,72 @@ async def fetch_url_content(url: str, timeout: int = 10) -> FetchResult:
     norm_url = _normalize_url(url)
     request_id = f"req-{int(time.time() * 1000)}"
 
+    # Enhanced progress tracking
+    progress = create_progress_tracker(_TOOL, request_id, total_steps=4)
+
     # Logging: accept + progress
     log_accept(_LOG, tool=_TOOL, client_id=None, request_id=request_id, payload={"url": norm_url})
     start = time.monotonic()
 
     resp: httpx.Response | None = None
     try:
+        # Step 1: Initialize request
+        with progress.step_context("initialize_request", {"url": norm_url, "timeout": timeout}):
+            pass
+
         async with httpx.AsyncClient(follow_redirects=True) as client:
-            log_progress(_LOG, tool=_TOOL, request_id=request_id, step="http_get", details={"url": norm_url})
-
-            # Some dummies used in tests don't accept timeout=; try-with-timeout then fallback.
-            try:
-                resp = await client.get(norm_url, timeout=timeout)
-            except TypeError:
-                resp = await client.get(norm_url)
-
-            # Not all fakes implement raise_for_status()
-            if hasattr(resp, "raise_for_status"):
+            # Step 2: Execute HTTP request
+            async with progress.async_step_context("http_request", {"url": norm_url}):
+                # Some dummies used in tests don't accept timeout=; try-with-timeout then fallback.
                 try:
-                    resp.raise_for_status()
-                except Exception:
-                    # If a dummy implements it and raises, let handling below format error
-                    pass
+                    resp = await client.get(norm_url, timeout=timeout)
+                except TypeError:
+                    resp = await client.get(norm_url)
 
-            text = getattr(resp, "text", "")
-            status = int(getattr(resp, "status_code", 0)) or 200
-            headers = dict(getattr(resp, "headers", {}) or {})
-            preview = f"{text}:{norm_url}"
-
-            elapsed_ms: float | None = None
-            elapsed_obj = getattr(resp, "elapsed", None)
-            if elapsed_obj is None:
-                elapsed_ms = (time.monotonic() - start) * 1000.0
-            else:
-                try:
-                    # httpx typically exposes timedelta
-                    elapsed_ms = float(elapsed_obj.total_seconds() * 1000.0)
-                except Exception:
+                # Not all fakes implement raise_for_status()
+                if hasattr(resp, "raise_for_status"):
                     try:
-                        # dummy can be float already
-                        elapsed_ms = float(elapsed_obj)
+                        resp.raise_for_status()
                     except Exception:
-                        elapsed_ms = None
+                        # If a dummy implements it and raises, let handling below format error
+                        pass
 
-            log_response(
-                _LOG,
-                tool=_TOOL,
-                request_id=request_id,
-                status="ok",
-                duration_ms=(time.monotonic() - start) * 1000.0,
-                size=len(text),
-            )
+            # Step 3: Process response
+            with progress.step_context("process_response", {"status_code": getattr(resp, "status_code", None)}):
+                text = getattr(resp, "text", "")
+                status = int(getattr(resp, "status_code", 0)) or 200
+                headers = dict(getattr(resp, "headers", {}) or {})
+                preview = f"{text}:{norm_url}"
+
+                elapsed_ms: float | None = None
+                elapsed_obj = getattr(resp, "elapsed", None)
+                if elapsed_obj is None:
+                    elapsed_ms = (time.monotonic() - start) * 1000.0
+                else:
+                    try:
+                        # httpx typically exposes timedelta
+                        elapsed_ms = float(elapsed_obj.total_seconds() * 1000.0)
+                    except Exception:
+                        try:
+                            # dummy can be float already
+                            elapsed_ms = float(elapsed_obj)
+                        except Exception:
+                            elapsed_ms = None
+
+            # Step 4: Finalize and log
+            with progress.step_context(
+                "finalize_response", {"content_length": len(text), "truncated": len(preview) > 5000}
+            ):
+                log_response(
+                    _LOG,
+                    tool=_TOOL,
+                    request_id=request_id,
+                    status="ok",
+                    duration_ms=(time.monotonic() - start) * 1000.0,
+                    size=len(text),
+                )
+
+            progress.complete("fetch_completed", {"status": "success", "content_length": len(text)})
 
             return FetchResult(
                 url=norm_url,
@@ -122,6 +138,9 @@ async def fetch_url_content(url: str, timeout: int = 10) -> FetchResult:
             status="error",
             duration_ms=(time.monotonic() - start) * 1000.0,
         )
+
+        progress.complete("fetch_failed", {"status": "error", "error": str(exc)})
+
         return FetchResult(
             url=norm_url,
             status_code=None,
