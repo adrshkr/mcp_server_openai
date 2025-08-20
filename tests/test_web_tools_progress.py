@@ -59,14 +59,14 @@ def _json_lines(s: str) -> list[dict]:
     return parsed
 
 
-def _first_event(objs, event_name):
+def _first_event(objs, event_type_name):
     if not objs:
         return None
     for obj in objs:
-        event = obj.get("event")
-        if event == event_name:
+        event_type = obj.get("event_type")
+        if event_type == event_type_name:
             return obj
-    print(f"Available events: {[obj.get('event') for obj in objs]}")  # Debug print
+    print(f"Available event types: {[obj.get('event_type') for obj in objs]}")  # Debug print
     return None
 
 
@@ -75,15 +75,22 @@ def test_fetch_url_logging_and_progress(monkeypatch: pytest.MonkeyPatch, capsys)
     # Stub AsyncClient
     monkeypatch.setattr(httpx, "AsyncClient", lambda **kwargs: _DummyAsyncClient("ok"))
 
-    # Get logger with JsonFormatter
+    # Get both loggers with JsonFormatter
     web_logger = get_logger("mcp.tool.web.fetch_url")
+    progress_logger = get_logger("mcp.progress")
 
-    # Ensure stderr handler with JsonFormatter
+    # Ensure stderr handler with JsonFormatter for both loggers
     handler = logging.StreamHandler(sys.stderr)
     handler.setFormatter(JsonFormatter())
     web_logger.handlers = [handler]
     web_logger.setLevel(logging.INFO)
     web_logger.propagate = False
+
+    progress_handler = logging.StreamHandler(sys.stderr)
+    progress_handler.setFormatter(JsonFormatter())
+    progress_logger.handlers = [progress_handler]
+    progress_logger.setLevel(logging.INFO)
+    progress_logger.propagate = False
 
     # Clear existing output
     capsys.readouterr()
@@ -91,23 +98,36 @@ def test_fetch_url_logging_and_progress(monkeypatch: pytest.MonkeyPatch, capsys)
     # Run the fetch
     res = asyncio.run(web_tools.fetch_url_content("example.com/test path"))
 
-    # Flush handler
+    # Flush handlers
     handler.flush()
+    progress_handler.flush()
 
     # Capture output
     captured = capsys.readouterr()
 
-    # Parse logs (keep it simple)
-    objs = [json.loads(line) for line in captured.err.splitlines() if line.strip()]
+    # Parse all logs from stderr (includes both web and progress logs)
+    all_lines = [line.strip() for line in captured.err.splitlines() if line.strip()]
+    objs = []
+    for line in all_lines:
+        try:
+            objs.append(json.loads(line))
+        except json.JSONDecodeError:
+            continue
 
-    # Get all events for debugging
-    events = [obj.get("event") for obj in objs]
-    print(f"Found events: {events}")
+    # Get all event types for debugging
+    event_types = [obj.get("event_type") for obj in objs]
+    print(f"Found event types: {event_types}")
 
-    # Check required events (single assertion block)
-    assert "progress" in events, f"missing 'progress' event\nEvents: {events}\nstderr:\n{captured.err}"
-    assert "response" in events, f"missing 'response' event\nEvents: {events}\nstderr:\n{captured.err}"
-    assert "accept" in events, f"missing 'accept' event\nEvents: {events}\nstderr:\n{captured.err}"
+    # Check required event types (single assertion block)
+    assert (
+        "progress_update" in event_types
+    ), f"missing 'progress_update' event\nEvent types: {event_types}\nstderr:\n{captured.err}"
+    assert (
+        "request_completed" in event_types
+    ), f"missing 'request_completed' event\nEvent types: {event_types}\nstderr:\n{captured.err}"
+    assert (
+        "request_accepted" in event_types
+    ), f"missing 'request_accepted' event\nEvent types: {event_types}\nstderr:\n{captured.err}"
 
     # Verify response data
     assert res.url.startswith("https://example.com/test%20path")
@@ -125,12 +145,12 @@ def test_fetch_url_logging_and_progress(monkeypatch: pytest.MonkeyPatch, capsys)
     assert hdrs["server"] == "dummy"
 
     # Check for required log events
-    progress = _first_event(objs, "progress")
-    response = _first_event(objs, "response")
-    assert progress is not None, f"missing 'progress' event log\nstderr:\n{captured.err}"
-    assert response is not None, f"missing 'response' event log\nstderr:\n{captured.err}"
+    progress = _first_event(objs, "progress_update")
+    response = _first_event(objs, "request_completed")
+    assert progress is not None, f"missing 'progress_update' event log\nstderr:\n{captured.err}"
+    assert response is not None, f"missing 'request_completed' event log\nstderr:\n{captured.err}"
 
     # If 'accept' is present, verify its tool name
-    accept = _first_event(objs, "accept")
+    accept = _first_event(objs, "request_accepted")
     if accept is not None:
         assert accept.get("tool") == "web.fetch_url"

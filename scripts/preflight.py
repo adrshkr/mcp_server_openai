@@ -3,9 +3,16 @@
 Preflight checks: Black format -> Ruff lint.
 Skips missing paths with a warning. Targets src/mcp_server_openai.
 """
+import os
 import subprocess
 import sys
 from pathlib import Path
+
+# Ensure UTF-8 encoding for Windows
+if os.name == 'nt':
+    import codecs
+    sys.stdout = codecs.getwriter('utf-8')(sys.stdout.buffer)
+    sys.stderr = codecs.getwriter('utf-8')(sys.stderr.buffer)
 
 RED = "\033[91m"
 GREEN = "\033[92m"
@@ -19,9 +26,9 @@ def run(desc: str, cmd: list[str], cwd: Path) -> None:
   print(f"{BLUE}[PRE-FLIGHT]{RESET} {desc}...")
   try:
     subprocess.run(cmd, check=True, capture_output=True, text=True, cwd=cwd)
-    print(f"{GREEN}✔ {desc} OK{RESET}")
+    print(f"{GREEN}[OK] {desc}{RESET}")
   except subprocess.CalledProcessError as e:
-    print(f"{RED}✘ {desc} failed. Aborting.{RESET}")
+    print(f"{RED}[FAIL] {desc} failed. Aborting.{RESET}")
     if e.stdout: print(e.stdout)
     if e.stderr: print(e.stderr)
     sys.exit(e.returncode)
@@ -35,10 +42,10 @@ def main() -> None:
     if path_obj.exists():
       existing_paths.append(p)
     else:
-      print(f"{YELLOW}⚠ Skipping missing path: {p}{RESET}")
+      print(f"{YELLOW}[SKIP] Missing path: {p}{RESET}")
 
   if not existing_paths:
-    print(f"{RED}✘ No valid paths to check. Aborting preflight.{RESET}")
+    print(f"{RED}[FAIL] No valid paths to check. Aborting preflight.{RESET}")
     sys.exit(1)
 
   black_cmd = ["uv", "run", "black"]
@@ -49,7 +56,7 @@ def main() -> None:
   run("Black auto-format", [*black_cmd, *existing_paths], root)
   run("Ruff lint", ["uv", "run", "ruff", "check", "--fix", *existing_paths], root)
 
-  print(f"\n{GREEN}✅ All preflight checks passed!{RESET}")
+  print(f"\n{GREEN}[SUCCESS] All preflight checks passed!{RESET}")
 
 if __name__ == "__main__":
   main()
