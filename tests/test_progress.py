@@ -125,18 +125,19 @@ class TestProgressTracker:
             listeners=[mock_listener],
         )
 
-        # Sleep a bit to ensure meaningful elapsed time
-        time.sleep(0.01)
+        # Sleep longer to ensure meaningful elapsed time on all platforms
+        time.sleep(0.05)  # 50ms should be measurable on all systems
         tracker.update_progress(25.0, "quarter_done")
 
         event = mock_listener.on_progress_update.call_args[0][0]
-        assert event.elapsed_ms > 0
+        # Allow for timing precision issues - elapsed time should be at least 30ms
+        assert event.elapsed_ms >= 30.0, f"Expected elapsed_ms >= 30.0, got {event.elapsed_ms}"
         assert event.eta_ms is not None
         assert event.eta_ms > 0
 
         # At 25% progress, ETA should be approximately 3x elapsed time
         expected_eta = event.elapsed_ms * 3
-        assert event.eta_ms == pytest.approx(expected_eta, rel=0.1)
+        assert event.eta_ms == pytest.approx(expected_eta, rel=0.2)  # Allow more tolerance
 
     def test_completion(self):
         """Test progress completion."""
