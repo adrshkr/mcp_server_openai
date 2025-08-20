@@ -1,30 +1,72 @@
-# mcp\_server\_openai
+# mcp_server_openai
 
-A minimal, production-ready-ish FastMCP server (Python) using the official MCP SDK.
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![FastMCP](https://img.shields.io/badge/FastMCP-compatible-green.svg)](https://github.com/jlowin/fastmcp)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-Exposes:
+A production-ready FastMCP server implementation using the official MCP SDK. Provides mathematical operations, web content fetching, PowerPoint generation, and intelligent prompt management with client-specific configurations.
 
-* Tools: `math.add`, `math.sub`, `web.fetch_url`, `content.create` (PPT-first)
-* Resource: `health://ping`
-* Prompt: `summarize(topic, tone="concise", client_id=None)` with per-client overrides
+## ✨ Features
+
+- **🔧 Tools**: Mathematical operations, web fetching, PowerPoint content generation
+- **📊 Resources**: Health monitoring and system status
+- **🎯 Prompts**: Jinja2-based templates with per-client customization
+- **🚀 Dual Interface**: Both stdio and HTTP/SSE modes
+- **📝 Structured Logging**: JSON-formatted request lifecycle tracking
+- **🐳 Docker Ready**: Containerized deployment support
 
 ---
 
-## Requirements
+## 📋 Table of Contents
 
-* Python 3.10+
-* Node.js LTS (for the MCP Inspector; provides `npx`)
-* Optional: Docker
-* Optional: [`uv`](https://github.com/astral-sh/uv) for fast, reproducible envs
+- [Quick Start](#-quick-start)
+- [Requirements](#-requirements)
+- [Installation](#-installation)
+- [Usage](#-usage)
+  - [Stdio Mode](#stdio-mode-with-mcp-dev-inspector)
+  - [HTTP Mode](#http-mode-with-sse)
+- [API Reference](#-api-reference)
+- [Configuration](#-configuration)
+- [Testing](#-testing)
+- [Docker](#-docker)
+- [Development](#-development)
+- [Project Structure](#-project-structure)
+- [Changelog](#-changelog)
 
-## Install
+---
+
+## 🚀 Quick Start
+
+```bash
+# Install with uv (recommended)
+uv venv && uv sync
+
+# Run in stdio mode with MCP inspector
+uv run mcp dev src/mcp_server_openai/server.py:app
+
+# Or run HTTP server
+uv run uvicorn mcp_server_openai.http_server:app --host 0.0.0.0 --port 8000
+```
+
+---
+
+## 📦 Requirements
+
+- **Python 3.10+**
+- **Node.js LTS** (for MCP Inspector; provides `npx`)
+- **Optional**: Docker for containerized deployment
+- **Recommended**: [`uv`](https://github.com/astral-sh/uv) for fast, reproducible environments
+
+## 💾 Installation
+
+### Using pip
 
 ```bash
 python -m pip install -U pip
 pip install -e .
 ```
 
-Or with uv:
+### Using uv (Recommended)
 
 ```bash
 uv venv
@@ -33,7 +75,9 @@ uv sync
 
 ---
 
-## Run (stdio) with MCP dev inspector
+## 🎮 Usage
+
+### Stdio Mode with MCP Dev Inspector
 
 ```bash
 # Install the CLI if needed
@@ -43,41 +87,36 @@ uv add "mcp[cli]"
 uv run mcp dev src/mcp_server_openai/server.py:app
 ```
 
-Notes:
+#### Windows Setup Notes
 
-* Requires `npx` on PATH. On Windows, ensure either:
+Ensure `npx` is available on PATH:
+- `C:\Program Files\nodejs\npx.cmd`, or  
+- `%USERPROFILE%\AppData\Roaming\npm\npx.cmd`
 
-  * `C:\\Program Files\\nodejs\\npx.cmd`, or
-  * `%USERPROFILE%\\AppData\\Roaming\\npm\\npx.cmd`
-* Prefer the path spec above. If you want a module spec, first `pip install -e .` then:
+#### Alternative Module Spec
 
-  ```bash
-  uv run mcp dev mcp_server_openai.server:app
-  ```
-
----
-
-## Run (HTTP, SSE is live)
-
+After `pip install -e .`:
 ```bash
-uv run uvicorn mcp_server_openai.http_server:app --host 0.0.0.0 --port 8000
-
-# Health and info
-curl http://127.0.0.1:8000/health    # -> ok
-curl http://127.0.0.1:8000/info
-
-# SSE (live)
-curl -iN "http://127.0.0.1:8000/mcp/sse?client_id=local-test"
-# -> 200 OK, Content-Type: text/event-stream
-#    : connected ...
-#    event: ready
-#    data: {}
-#    : keep-alive
+uv run mcp dev mcp_server_openai.server:app
 ```
 
-Tiny JS example:
+### HTTP Mode with SSE
 
-```js
+```bash
+# Start HTTP server
+uv run uvicorn mcp_server_openai.http_server:app --host 0.0.0.0 --port 8000
+
+# Health checks
+curl http://127.0.0.1:8000/health    # Returns: "ok"
+curl http://127.0.0.1:8000/info      # Server information
+
+# Server-Sent Events endpoint
+curl -iN "http://127.0.0.1:8000/mcp/sse?client_id=local-test"
+```
+
+#### JavaScript SSE Example
+
+```javascript
 const es = new EventSource("http://127.0.0.1:8000/mcp/sse?client_id=local-test");
 es.addEventListener("ready", (e) => console.log("ready", e.data));
 es.onmessage = (e) => console.log("message", e.data);
@@ -86,30 +125,50 @@ es.onerror = (e) => console.error("sse error", e);
 
 ---
 
-## Tools
+## 📖 API Reference
 
-### math.add / math.sub
+### 🔧 Tools
 
+#### `math.add` / `math.sub`
+Performs basic mathematical operations.
+
+**Parameters:**
 ```json
-{ "a": 2, "b": 3 }
+{
+  "a": 2,
+  "b": 3
+}
 ```
 
-### web.fetch\_url
+**Returns:** Numeric result
 
-Returns a flat JSON result suitable for the Inspector.
+#### `web.fetch_url`
+Fetches web content with comprehensive metadata.
 
+**Parameters:**
 ```json
-{ "url": "https://example.com" }
+{
+  "url": "https://example.com"
+}
 ```
 
-Output fields include: `url`, `status_code`, `elapsed_ms`, `headers_json`, `content_preview`, `truncated`, `error`.
+**Returns:**
+```json
+{
+  "url": "https://example.com",
+  "status_code": 200,
+  "elapsed_ms": 245.3,
+  "headers_json": "{\"content-type\": \"text/html\"}",
+  "content_preview": "Web page content...",
+  "truncated": false,
+  "error": null
+}
+```
 
-### content.create (PPT-first)
+#### `content.create`
+Generates PowerPoint presentations from structured data.
 
-Creates a PPTX from a brief and source highlights; saves under `output/<Client>/<Project>/content.pptx`.
-
-Example payload:
-
+**Parameters:**
 ```json
 {
   "client_name": "Acme",
@@ -117,7 +176,7 @@ Example payload:
   "source_content_type": "Highlight",
   "source_content_details": [
     "Market share +3%",
-    "Beta launched",
+    "Beta launched", 
     "4 enterprise wins"
   ],
   "target_content_type": "PPT",
@@ -126,25 +185,43 @@ Example payload:
 }
 ```
 
----
+**Output:** Saves to `output/<Client>/<Project>/content.pptx`
 
-## Prompt: summarize
+### 📊 Resources
 
-Optional `client_id` selects per-client defaults (see Config).
+#### `health://ping`
+Health check endpoint returning server status.
 
+### 🎯 Prompts
+
+#### `summarize`
+Jinja2-based prompt with client-specific customization.
+
+**Parameters:**
 ```json
-{ "topic": "LLMs", "client_id": "acme" }
+{
+  "topic": "Large Language Models",
+  "tone": "concise",
+  "client_id": "acme"
+}
 ```
-Note: Prompts are file-based (Jinja2) and can merge per-client variables from MCP_CONFIG_JSON or MCP_CONFIG_PATH (YAML). See config.example.yaml.
+
+**Features:**
+- File-based Jinja2 templates
+- Per-client variable overrides
+- Configurable via `MCP_CONFIG_PATH` (YAML) or `MCP_CONFIG_JSON`
 
 ---
 
-## Config (per-client prompt vars)
+## ⚙️ Configuration
 
-Provide defaults and per-client overrides via **YAML file** or **JSON env var**.
+### Per-Client Prompt Variables
 
-Example YAML (`config.yaml`):
+Configure client-specific prompt behavior via YAML file or JSON environment variable.
 
+#### YAML Configuration
+
+Create `config.yaml`:
 ```yaml
 prompts:
   summarize:
@@ -153,151 +230,222 @@ prompts:
     clients:
       acme:
         tone: detailed
+        style: professional
 ```
 
-Run with:
+#### Environment Variables
 
 ```bash
-# choose one
+# YAML file path
 export MCP_CONFIG_PATH=./config.yaml
-# or
+
+# Or direct JSON
 export MCP_CONFIG_JSON='{"prompts":{"summarize":{"defaults":{"tone":"concise"},"clients":{"acme":{"tone":"detailed"}}}}}'
 ```
 
-Quick sanity check:
+#### Validation
 
+Test your configuration:
 ```bash
-uv run python - <<'PY'
+uv run python -c "
 from mcp_server_openai.config import get_prompt_vars
-print("no client:", get_prompt_vars("summarize", client_id=None))
-print("acme:", get_prompt_vars("summarize", client_id="acme"))
-PY
+print('Default:', get_prompt_vars('summarize', client_id=None))
+print('Acme client:', get_prompt_vars('summarize', client_id='acme'))
+"
 ```
 
----
+### CLI Tool Usage
 
-## Call tools from JSON (no browser)
-
-Use the helper script:
+Call tools directly from JSON files:
 
 ```bash
-# content.create example
+# Example: content creation
 uv run python scripts/call_tool.py content.create params-content-create.json
 ```
 
-If `npx` is not detected automatically on Windows, set:
+#### Windows NPX Path Setup
 
+If `npx` is not automatically detected:
 ```bash
-# PowerShell (persist)
-setx NPX_PATH "C:\\Program Files\\nodejs\\npx.cmd"
+# PowerShell (persistent)
+setx NPX_PATH "C:\Program Files\nodejs\npx.cmd"
+
 # Git Bash (session)
 export NPX_PATH="/c/Program Files/nodejs/npx.cmd"
 ```
 
 ---
 
-## Tests
+## 🧪 Testing
+
+### Run Tests
 
 ```bash
+# Using uv (recommended)
 uv run python -m pytest -q
-# or
+
+# Using pytest directly
 pytest
 ```
 
-SSE test note on Windows: the SSE stream smoke test is skipped by default to avoid platform-specific blocking. To force-run on non-Windows, unset `SKIP_SSE_TESTS`.
+### Platform-Specific Notes
+
+**Windows SSE Tests**: Stream tests are skipped by default to avoid platform-specific blocking.
+
+To force-run SSE tests on non-Windows:
+```bash
+unset SKIP_SSE_TESTS && uv run python -m pytest -q
+```
+
+### Coverage
 
 ```bash
-# bash
-unset SKIP_SSE_TESTS && uv run python -m pytest -q
+uv run python -m pytest --cov=src/mcp_server_openai --cov-report=html
 ```
 
 ---
 
-## Docker
+## 🐳 Docker
+
+### Build and Run
 
 ```bash
-# build (adjust tag as needed)
-docker build -t mcp-server-openai:0.2.3 .
+# Build image
+docker build -t mcp-server-openai:0.2.0 .
 
-# run
-docker run --rm -p 8000:8000 mcp-server-openai:0.2.3
+# Run container
+docker run --rm -p 8000:8000 mcp-server-openai:0.2.0
 
-# verify
+# Health check
 curl http://127.0.0.1:8000/health
 curl -iN "http://127.0.0.1:8000/mcp/sse?client_id=local-test"
 ```
 
-Tip (Windows): Docker builds on Linux are case-sensitive. Ensure the file is `README.md` or update the Dockerfile to copy `README.md` exactly.
+### Docker Compose
+
+```yaml
+version: '3.8'
+services:
+  mcp-server:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - MCP_CONFIG_JSON={"prompts":{"summarize":{"defaults":{"tone":"concise"}}}}
+```
+
+**Note**: Linux builds are case-sensitive. Ensure `README.md` filename matches exactly.
 
 ---
 
-## Makefile helpers (optional)
+## 🛠️ Development
 
-```make
-check:  ## preflight + tests + mypy
-	@echo "--- Full check: preflight + tests + mypy ---"; \
-	make preflight && make test && uv run mypy .
+### Make Commands
 
-preflight:
-	@echo "--- Running preflight checks (Black -> Ruff) ---"; \
-	uv run black --diff --check . || true; \
-	uv run black .; \
-	uv run ruff check .
+```bash
+make check      # Full check: preflight + tests + mypy
+make preflight  # Code formatting and linting
+make fmt        # Format code with Black
+make lint       # Lint with Ruff
+make test       # Run tests
+make run-http   # Start HTTP server
+```
 
-fmt:
-	uv run black .
+### Code Quality
 
-lint:
-	uv run ruff check .
+```bash
+# Format code
+uv run black .
 
-test:
-	uv run python -m pytest -q
+# Lint code
+uv run ruff check .
 
-run-http:
-	uv run uvicorn mcp_server_openai.http_server:app --host 0.0.0.0 --port $${PORT-8000}
+# Type checking
+uv run mypy .
+
+# Full quality check
+make check
 ```
 
 ---
 
-## Project layout
+## 📁 Project Structure
 
 ```
 src/mcp_server_openai/
-  server.py                # FastMCP app factory + auto-discovery
-  http_server.py           # HTTP app (health/info; SSE live)
-  config.py                # YAML/ENV config loader for prompt vars
-  tools/
-    __init__.py
-    math_tools.py
-    web_tools.py
-    content_creator.py     # PPT-first content generation
-  resources/
-    health.py
-  prompts/
-    summarize.py
+├── __main__.py              # CLI entrypoint
+├── main.py                  # Main application logic
+├── server.py                # FastMCP app factory + auto-discovery
+├── http_server.py           # HTTP/SSE server (Starlette)
+├── config.py                # YAML/JSON config loader
+├── logging_utils.py         # Structured JSON logging
+├── progress.py              # Progress tracking utilities
+├── tools/
+│   ├── __init__.py
+│   ├── math_tools.py        # Mathematical operations
+│   ├── web_tools.py         # Web content fetching
+│   └── content_creator.py   # PowerPoint generation
+├── resources/
+│   ├── __init__.py
+│   └── health.py            # Health check resources
+└── prompts/
+    ├── __init__.py
+    ├── manager.py           # Jinja2 template manager
+    ├── summarize.py         # Summarization prompts
+    └── templates/
+        └── summarize.j2     # Jinja2 template files
+
 scripts/
-  call_tool.py             # CLI helper to call tools from a JSON file
-tests/
-  test_math_tools.py
-  test_web_tools.py
-  test_resources.py
-  test_prompts.py
-  test_config.py
-  test_content_creator.py
-  test_http_server.py
+├── call_tool.py             # CLI tool caller
+├── cli.sh                   # Shell utilities
+├── preflight.py             # Code quality checks
+└── run.sh                   # Runtime scripts
+
+tests/                       # Comprehensive test suite
+├── conftest.py
+├── test_*.py               # Unit tests for all modules
+└── ...
 ```
 
 ---
 
-## Changelog (high level)
+## 📈 Changelog
 
-* Milestone 2: Registry & Prompts
+### v0.2.0 - Current
 
-  * Auto-discovery of tools via `register(mcp)` in `mcp_server_openai.tools.*`.
-  * Config loader (`MCP_CONFIG_PATH` YAML or `MCP_CONFIG_JSON` env) with per-client prompt vars.
-  * `summarize` prompt reads merged defaults and client-specific overrides.
-* Milestone 3.1: HTTP/SSE
+**Milestone 2: Registry & Prompts**
+- ✅ Auto-discovery of tools via `register(mcp)` pattern
+- ✅ YAML/JSON config loader with per-client prompt variables  
+- ✅ Jinja2-based prompt templates with client overrides
+- ✅ Structured JSON logging with request lifecycle tracking
 
-  * `/mcp/sse` streams: initial `ready` event + periodic keep-alives.
-  * Health/info endpoints exposed for readiness probes.
-  * Windows-friendly tests (SSE smoke test skipped by default).
+**Milestone 3.1: HTTP/SSE**
+- ✅ Server-Sent Events streaming with keep-alive
+- ✅ Health and info endpoints for monitoring
+- ✅ Cross-platform compatibility (Windows-friendly tests)
+- ✅ Docker containerization support
+
+**Features:**
+- 🔧 Mathematical operations (`math.add`, `math.sub`)
+- 🌐 Web content fetching (`web.fetch_url`)
+- 📄 PowerPoint generation (`content.create`)
+- 🎯 Client-specific prompt customization
+- 📊 Health monitoring resources
+
+---
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature-name`
+3. Make changes following the existing code style
+4. Run quality checks: `make check`
+5. Submit a pull request
+
+## 📄 License
+
+MIT License - see [LICENSE](LICENSE) file for details.
+
+---
+
+*Built with ❤️ using FastMCP and the Model Context Protocol*
