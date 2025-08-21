@@ -48,35 +48,12 @@
       "Bash(cp:*)",
       "Bash(~/.claude/statusline-manager.sh test:*)",
       "Bash(ccusage --help)",
-      "Bash(ccusage blocks:*)",
-      "Bash(echo $PATH)",
-      "Bash(unset PYTHONPATH)",
-      "Bash(grep:*)",
-      "Bash(env)",
-      "Bash(echo:*)",
-      "Bash(claude --mcp-config .mcp.json --help)",
-      "Bash(npx @modelcontextprotocol/server-memory:*)",
-      "Bash(timeout 3s npx @cyanheads/git-mcp-server --help)",
-      "Bash(npm search:*)",
-      "Bash(claude:*)",
-      "Bash(timeout 3s npx @modelcontextprotocol/server-sequential-thinking --help)",
-      "Bash(npx @modelcontextprotocol/server-brave-search:*)",
-      "Bash(npx @modelcontextprotocol/server-filesystem:*)",
-      "WebFetch(domain:github.com)",
-      "Bash(timeout 5s npx @modelcontextprotocol/server-filesystem \"/c/Users/adars/PycharmProjects\")",
-      "Bash(timeout 5s npx @playwright/mcp --help)",
-      "Bash(timeout 5s npx mcp-code-graph --help)",
-      "Bash(timeout 5s npx @thelord/mcp-server-docker-npx --help)",
-      "Bash(timeout 5s npx @bytebase/dbhub --help)"
+      "Bash(ccusage blocks:*)"
     ],
     "deny": [],
     "ask": [],
-    "defaultMode": "bypassPermissions",
     "additionalDirectories": [
-      "/c/Users/adars/PycharmProjects/PythonProject",
-      "/c/Users/adars/PycharmProjects",
-      "/c/Users/adars/.claude/projects",
-      "/c/Users/adars/.claude"
+      "C:\\c\\Users\\adars\\PycharmProjects\\PythonProject"
     ]
   },
   "outputStyle": "default"
