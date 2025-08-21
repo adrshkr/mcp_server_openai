@@ -1,10 +1,39 @@
-Summarize the topic "{{ topic }}" for a {{ audience | default('general') }} audience in a {{ tone | default('concise') }} tone.
+{%- extends "base.j2" -%}
 
-Constraints:
-- Provide {{ bullets_min | default(4) }}–{{ bullets_max | default(6) }} bullet points.
-- Be specific and actionable; avoid fluff.
-- Highlight key facts, takeaways, and any concrete next steps if relevant.
+{%- block content -%}
+# Summary Request
 
-Output format:
-- Use plain text bullets, one per line, prefixed with "- ".
-- Do not add a lead-in sentence or a title; just the bullets.
+## Topic
+{{ topic | safe_url }}
+
+## Requirements
+- **Audience**: {{ audience | default('general') }}
+- **Tone**: {{ tone | default('concise') }}
+- **Style**: {{ style | default('professional') }}
+- **Language**: {{ language | default('en') }}
+- **Bullet Points**: {{ bullets_min | default(4) }}–{{ bullets_max | default(6) }}
+
+## Instructions
+Please provide a {{ tone | default('concise') }} summary of the topic "{{ topic }}" for a {{ audience | default('general') }} audience.
+
+### Constraints
+- Provide {{ bullets_min | default(4) }}–{{ bullets_max | default(6) }} bullet points
+- Be specific and actionable; avoid fluff
+- Highlight key facts, takeaways, and any concrete next steps if relevant
+- Use {{ style | default('professional') }} writing style
+
+### Output Format
+- Use plain text bullets, one per line, prefixed with "- "
+- Do not add a lead-in sentence or a title; just the bullets
+- Ensure content is appropriate for {{ audience | default('general') }} audience
+
+{%- if custom_fields -%}
+### Custom Requirements
+{{ format_metadata(custom_fields) }}
+{%- endif -%}
+
+## Expected Output
+{%- for i in range(bullets_min | default(4), (bullets_max | default(6)) + 1) -%}
+- [Bullet point {{ i }}]
+{%- endfor -%}
+{%- endblock -%}

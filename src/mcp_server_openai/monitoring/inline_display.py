@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import asyncio
 import time
+from typing import Any
 
 from ..logging_utils import get_logger
 from .monitoring_config import get_monitoring_config
@@ -19,7 +20,7 @@ _logger = get_logger("mcp.monitoring.display")
 class InlineDisplayManager:
     """Manages inline cost and token usage displays."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.config = get_monitoring_config()
         self.tracker = EnhancedUsageTracker(refresh_interval=self.config.refresh_interval)
         self._last_display_update = 0.0
@@ -122,13 +123,13 @@ async def log_current_usage() -> None:
 class UsageMiddleware:
     """Middleware for automatically tracking and displaying usage in web requests."""
 
-    def __init__(self, app, log_interval: float = 300.0):  # Log every 5 minutes
+    def __init__(self, app: Any, log_interval: float = 300.0) -> None:  # Log every 5 minutes
         self.app = app
         self.log_interval = log_interval
         self._last_log = 0.0
         self.display_manager = get_display_manager()
 
-    async def __call__(self, scope, receive, send):
+    async def __call__(self, scope: Any, receive: Any, send: Any) -> None:
         """ASGI middleware implementation."""
         # Track usage at regular intervals
         now = time.time()
@@ -139,7 +140,7 @@ class UsageMiddleware:
         # Continue with the request
         await self.app(scope, receive, send)
 
-    async def _log_usage_async(self):
+    async def _log_usage_async(self) -> None:
         """Log usage asynchronously."""
         try:
             await self.display_manager.log_usage_update()

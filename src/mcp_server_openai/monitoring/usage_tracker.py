@@ -163,7 +163,9 @@ class EnhancedUsageTracker:
 
         return stats
 
-    async def track_api_call(self, input_tokens: int, output_tokens: int, cost: float, model: str | None = None) -> None:
+    async def track_api_call(
+        self, input_tokens: int, output_tokens: int, cost: float, model: str | None = None
+    ) -> None:
         """Track a single API call for session statistics."""
         if self._last_stats:
             # Update session stats

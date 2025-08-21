@@ -447,7 +447,11 @@ async def websocket_endpoint(websocket: WebSocket) -> None:
             try:
                 while True:
                     await asyncio.sleep(30)
-                    ping_data = {"type": "ping", "timestamp": datetime.now(UTC).isoformat(), "session_id": session_id}
+                    ping_data: dict[str, Any] = {
+                        "type": "ping",
+                        "timestamp": datetime.now(UTC).isoformat(),
+                        "session_id": session_id,
+                    }
                     if _monitoring_config.enabled:
                         try:
                             usage_stats = await _usage_tracker.get_current_usage()
