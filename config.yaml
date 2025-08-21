@@ -1,0 +1,5 @@
+notifications:
+  enabled: true
+  command_windows: 'powershell -Command "Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.MessageBox]::Show('{message}', '{title}')"'
+  command_linux: 'notify-send "{title}" "{message}"'
+  command_darwin: 'osascript -e ''display notification "{message}" with title "{title}"'''

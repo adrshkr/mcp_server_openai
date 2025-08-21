@@ -8,6 +8,7 @@ from dataclasses import dataclass, field
 from typing import Any, Protocol
 
 from . import logging_utils
+from .notifications import get_notifier
 
 _logger = logging_utils.get_logger("mcp.progress")
 
@@ -218,6 +219,14 @@ class ProgressTracker:
         )
 
         self._emit_event(event)
+
+        # Send notification on completion
+        notifier = get_notifier()
+        if notifier:
+            notifier.notify(
+                title=f"Task Completed: {self.tool_name}",
+                message=f"Tool '{self.tool_name}' finished successfully.",
+            )
 
     def create_subtask(
         self,
