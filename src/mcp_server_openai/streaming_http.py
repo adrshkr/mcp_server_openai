@@ -20,7 +20,7 @@ import asyncio
 import gzip
 import time
 import uuid
-from collections.abc import AsyncGenerator, AsyncIterator
+from collections.abc import AsyncGenerator, AsyncIterator, Callable
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
 from typing import Any
@@ -31,6 +31,7 @@ from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 from starlette.applications import Starlette
 from starlette.middleware import Middleware
+from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.gzip import GZipMiddleware
 from starlette.requests import Request
@@ -447,22 +448,6 @@ async def streaming_data_endpoint(request: Request) -> StreamingResponse:
     return StreamingResponse(generate_streaming_data(), headers=headers)
 
 
-def add_security_headers(response: Response) -> Response:
-    """Add modern security headers to responses."""
-    response.headers.update(
-        {
-            "X-Content-Type-Options": "nosniff",
-            "X-Frame-Options": "DENY",
-            "X-XSS-Protection": "1; mode=block",
-            "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
-            "Content-Security-Policy": "default-src 'self'",
-            "Referrer-Policy": "strict-origin-when-cross-origin",
-            "Permissions-Policy": "geolocation=(), microphone=(), camera=()",
-        }
-    )
-    return response
-
-
 # Middleware configuration
 middleware = [
     Middleware(
@@ -499,12 +484,31 @@ app = Starlette(
 app.state.limiter = _limiter
 
 
-@app.middleware("http")
-async def add_process_time_header(request: Request, call_next: Any) -> Response:
-    """Add request processing time and security headers."""
-    start_time = time.time()
-    response = await call_next(request)
-    process_time = time.time() - start_time
-    response.headers["X-Process-Time"] = str(round(process_time, 4))
-    response.headers["X-Request-ID"] = str(uuid.uuid4())
-    return add_security_headers(response)
+class ProcessTimeMiddleware(BaseHTTPMiddleware):
+    """Middleware to add request processing time and security headers."""
+
+    async def dispatch(self, request: Request, call_next: Callable[[Request], Any]) -> Response:
+        start_time = time.time()
+        response = await call_next(request)
+        process_time = time.time() - start_time
+
+        response.headers["X-Process-Time"] = str(round(process_time, 4))
+        response.headers["X-Request-ID"] = str(uuid.uuid4())
+
+        # Add security headers
+        response.headers.update(
+            {
+                "X-Content-Type-Options": "nosniff",
+                "X-Frame-Options": "DENY",
+                "X-XSS-Protection": "1; mode=block",
+                "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
+                "Referrer-Policy": "strict-origin-when-cross-origin",
+                "Content-Security-Policy": "default-src 'self'",
+                "Permissions-Policy": "geolocation=(), microphone=(), camera=()",
+            }
+        )
+
+        return response  # type: ignore[no-any-return]
+
+
+app.add_middleware(ProcessTimeMiddleware)
