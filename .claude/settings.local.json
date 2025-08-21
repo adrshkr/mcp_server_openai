@@ -44,12 +44,17 @@
       "Bash(ccusage statusline)",
       "Bash(ccusage daily:*)",
       "Bash(chmod:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(cp:*)",
+      "Bash(~/.claude/statusline-manager.sh test:*)",
+      "Bash(ccusage --help)",
+      "Bash(ccusage blocks:*)"
     ],
     "deny": [],
     "ask": [],
     "additionalDirectories": [
       "C:\\c\\Users\\adars\\PycharmProjects\\PythonProject"
     ]
-  }
+  },
+  "outputStyle": "default"
 }

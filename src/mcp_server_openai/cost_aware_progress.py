@@ -14,7 +14,9 @@ from .progress import ProgressTracker, create_progress_tracker
 class CostAwareProgressTracker(ProgressTracker):
     """Enhanced progress tracker with Claude API cost tracking."""
 
-    def __init__(self, tool_name: str, request_id: str, usage_tracker: EnhancedUsageTracker | None = None, **kwargs):
+    def __init__(
+        self, tool_name: str, request_id: str, usage_tracker: EnhancedUsageTracker | None = None, **kwargs: Any
+    ) -> None:
         super().__init__(tool_name, request_id, **kwargs)
         self.usage_tracker = usage_tracker
         self.token_usage = {"input": 0, "output": 0, "cost": 0.0, "requests": 0}
@@ -86,7 +88,7 @@ class CostAwareProgressTracker(ProgressTracker):
             "operation_tokens": self.token_usage["input"] + self.token_usage["output"],
         }
 
-    def complete(self, final_step: str, details: dict[str, Any] | None = None) -> None:
+    def complete(self, final_step: str = "Operation completed", details: dict[str, Any] | None = None) -> None:
         """Complete progress tracking with cost summary."""
         final_details = details or {}
         final_details.update(
@@ -96,7 +98,7 @@ class CostAwareProgressTracker(ProgressTracker):
 
 
 def create_cost_aware_progress_tracker(
-    tool_name: str, request_id: str, usage_tracker: EnhancedUsageTracker | None = None, **kwargs
+    tool_name: str, request_id: str, usage_tracker: EnhancedUsageTracker | None = None, **kwargs: Any
 ) -> CostAwareProgressTracker:
     """Create a cost-aware progress tracker."""
     return CostAwareProgressTracker(tool_name=tool_name, request_id=request_id, usage_tracker=usage_tracker, **kwargs)
@@ -104,7 +106,7 @@ def create_cost_aware_progress_tracker(
 
 # Backwards compatible function that returns cost-aware tracker when monitoring is enabled
 def create_progress_tracker_with_cost_monitoring(
-    tool_name: str, request_id: str, usage_tracker: EnhancedUsageTracker | None = None, **kwargs
+    tool_name: str, request_id: str, usage_tracker: EnhancedUsageTracker | None = None, **kwargs: Any
 ) -> ProgressTracker | CostAwareProgressTracker:
     """
     Create a progress tracker with optional cost monitoring.

@@ -15,7 +15,7 @@ from starlette.exceptions import HTTPException
 from starlette.requests import Request
 
 from ..logging_utils import get_logger
-from .usage_tracker import EnhancedUsageTracker
+from .usage_tracker import EnhancedUsageTracker, UsageStats
 
 _logger = get_logger("mcp.monitoring.limiter")
 
@@ -96,7 +96,7 @@ class CostAwareLimiter:
                 },
             )
 
-            raise HTTPException(status_code=429, detail=error_detail)
+            raise HTTPException(status_code=429, detail=error_detail.get("message", "API cost limits exceeded"))
 
         # Log warnings if approaching limits
         if result.get("warnings"):
@@ -109,7 +109,7 @@ class CostAwareLimiter:
                 },
             )
 
-    async def _check_global_limits(self, usage_stats) -> dict[str, Any]:
+    async def _check_global_limits(self, usage_stats: UsageStats) -> dict[str, Any]:
         """Check global cost and token limits."""
         # Check hourly cost limit
         if usage_stats.burn_rate_per_hour > self.cost_limits.hourly_max:
@@ -144,7 +144,7 @@ class CostAwareLimiter:
 
         return {"allowed": True}
 
-    async def _check_client_limits(self, client_id: str, usage_stats) -> dict[str, Any]:
+    async def _check_client_limits(self, client_id: str, usage_stats: UsageStats) -> dict[str, Any]:
         """Check per-client cost limits."""
         client_data = self._client_usage.get(client_id, {})
         cost_this_hour = client_data.get("cost_this_hour", 0.0)

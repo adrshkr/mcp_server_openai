@@ -31,7 +31,7 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-async def run_monitor_command(args) -> None:
+async def run_monitor_command(args: argparse.Namespace) -> None:
     """Handle monitoring subcommands."""
     import sys
 

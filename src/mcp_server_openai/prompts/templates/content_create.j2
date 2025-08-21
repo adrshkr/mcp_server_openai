@@ -1,0 +1,51 @@
+{%- extends "base.j2" -%}
+
+{%- block content -%}
+# Content Creation Request
+
+## Project Details
+- **Client**: {{ client_name }}
+- **Project**: {{ project_name }}
+- **Content Type**: {{ target_content_type | default('PPT') }}
+- **Number of Slides**: {{ number_of_slides | default(5) }}
+
+## Source Content
+**Type**: {{ source_content_type | default('Highlight') }}
+
+**Details**:
+{%- for detail in source_content_details -%}
+{{ render_bullet_point(detail) }}
+{%- endfor -%}
+
+## Content Brief
+{{ content_brief }}
+
+## Requirements
+- **Style**: {{ style | default('professional') }}
+- **Tone**: {{ tone | default('concise') }}
+- **Audience**: {{ audience | default('stakeholders') }}
+- **Language**: {{ language | default('en') }}
+
+## Instructions
+Create a {{ target_content_type | default('PPT') }} presentation based on the provided source content and brief.
+
+### Guidelines
+- Focus on the key achievements and updates from the source content
+- Structure the presentation logically with clear sections
+- Use {{ tone | default('concise') }} language appropriate for {{ audience | default('stakeholders') }}
+- Ensure each slide has a clear purpose and message
+- Include actionable next steps where relevant
+
+### Slide Structure
+{%- for i in range(1, (number_of_slides | default(5)) + 1) -%}
+**Slide {{ i }}**: [Slide purpose and content focus]
+{%- endfor -%}
+
+{%- if custom_fields -%}
+### Custom Requirements
+{{ format_metadata(custom_fields) }}
+{%- endif -%}
+
+## Expected Output
+A well-structured {{ target_content_type | default('PPT') }} presentation with {{ number_of_slides | default(5) }} slides that effectively communicates the key points from the source content.
+{%- endblock -%}

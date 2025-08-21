@@ -57,7 +57,37 @@ def get_config() -> dict[str, Any]:
     """
     Public accessor for the (cached) merged config.
     """
-    return load_config()
+    # Create a cache key based on environment variables to ensure proper invalidation
+    cache_key = (os.environ.get("MCP_CONFIG_JSON"), os.environ.get("MCP_CONFIG_PATH"))
+    return _load_config_with_cache(cache_key)
+
+
+@lru_cache(maxsize=1)
+def _load_config_with_cache(cache_key: tuple[str | None, str | None]) -> dict[str, Any]:
+    """
+    Internal cached function that loads config based on cache key.
+    """
+    env_json, env_path = cache_key
+
+    if env_json:
+        try:
+            data = json.loads(env_json)
+            return dict(data or {})
+        except Exception:
+            # Silently fall back to empty on bad JSON; avoids breaking dev flows
+            return {}
+
+    if env_path:
+        p = Path(env_path)
+        if p.is_file():
+            try:
+                result = _load_yaml_dict(p)
+                return result
+            except Exception:
+                # Also fall back to empty if YAML load fails
+                return {}
+
+    return {}
 
 
 def get_prompt_vars(prompt_name: str, client_id: str | None = None) -> dict[str, Any]:

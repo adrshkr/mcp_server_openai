@@ -14,7 +14,7 @@ import pkgutil
 
 from mcp.server.fastmcp import FastMCP  # match CLI SDK expectation
 
-from mcp_server_openai.monitoring.inline_display import get_display_manager, log_current_usage
+from mcp_server_openai.monitoring.inline_display import get_display_manager
 from mcp_server_openai.prompts import register_summarize
 from mcp_server_openai.resources import register_health
 
@@ -60,10 +60,7 @@ def _setup_monitoring(mcp: FastMCP) -> None:
         # Initialize display manager (this also initializes the usage tracker)
         get_display_manager()
 
-        # Add a startup hook to log initial usage
-        @mcp.on_startup
-        async def startup_usage_log():
-            await log_current_usage()
+        # Note: Initial usage logging will happen on first request
 
         logging.getLogger("mcp.monitoring").info("Monitoring system initialized")
     except Exception as e:
