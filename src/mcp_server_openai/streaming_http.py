@@ -41,11 +41,15 @@ from starlette.websockets import WebSocket, WebSocketDisconnect
 from websockets.exceptions import ConnectionClosed
 
 from .logging_utils import get_logger
+from .monitoring import CostAwareLimiter, EnhancedUsageTracker, get_monitoring_config
 from .progress import create_progress_tracker
 
-# Initialize logger and rate limiter
+# Initialize logger, rate limiter, and monitoring
 _logger = get_logger("mcp.streaming_http")
 _limiter = Limiter(key_func=get_remote_address)
+_monitoring_config = get_monitoring_config()
+_usage_tracker = EnhancedUsageTracker(refresh_interval=_monitoring_config.refresh_interval)
+_cost_limiter = CostAwareLimiter(_usage_tracker, enabled=_monitoring_config.rate_limiting_enabled)
 
 # Global connection management
 _active_connections: set[WebSocket] = set()
@@ -188,20 +192,96 @@ async def enhanced_info(request: Request) -> StreamingJSONResponse:
 
 
 async def metrics_endpoint(request: Request) -> StreamingJSONResponse:
-    """Prometheus-style metrics endpoint."""
+    """Enhanced metrics endpoint with Claude usage tracking."""
     uptime = time.time() - _server_metrics["start_time"]
 
+    # Get Claude usage stats
+    usage_stats = await _usage_tracker.get_current_usage()
+
+    # Check usage limits
+    limit_check = await _usage_tracker.check_usage_limits(
+        hourly_limit=_monitoring_config.cost_limits.hourly_max, daily_limit=_monitoring_config.cost_limits.daily_max
+    )
+
     metrics = {
-        "mcp_server_uptime_seconds": uptime,
-        "mcp_server_requests_total": _server_metrics["requests_total"],
-        "mcp_server_active_connections": len(_active_connections),
-        "mcp_server_active_sse_clients": len(_sse_clients),
-        "mcp_server_bytes_sent_total": _server_metrics["bytes_sent"],
-        "mcp_server_errors_total": _server_metrics["errors_total"],
-        "mcp_server_memory_usage_bytes": 0,  # TODO: Add memory monitoring
+        # Server metrics
+        "server": {
+            "uptime_seconds": uptime,
+            "requests_total": _server_metrics["requests_total"],
+            "active_connections": len(_active_connections),
+            "active_sse_clients": len(_sse_clients),
+            "bytes_sent_total": _server_metrics["bytes_sent"],
+            "errors_total": _server_metrics["errors_total"],
+        },
+        # Claude usage metrics
+        "claude_usage": usage_stats.to_dict(),
+        # Cost limits and warnings
+        "cost_monitoring": {
+            "limits": limit_check["limits"],
+            "within_limits": limit_check["within_limits"],
+            "warnings": limit_check["warnings"],
+            "monitoring_enabled": _monitoring_config.enabled,
+        },
+        # Client statistics
+        "client_stats": _cost_limiter.get_client_stats() if _monitoring_config.rate_limiting_enabled else {},
+        "timestamp": datetime.now(UTC).isoformat(),
     }
 
     return StreamingJSONResponse(metrics, compress=True)
+
+
+async def usage_endpoint(request: Request) -> StreamingJSONResponse:
+    """Detailed Claude usage and cost tracking endpoint."""
+    # Check cost limits before processing
+    await _cost_limiter.enforce_limits(request)
+
+    # Get detailed usage statistics
+    usage_stats = await _usage_tracker.get_current_usage()
+
+    # Check limits with detailed breakdown
+    limit_check = await _usage_tracker.check_usage_limits(
+        hourly_limit=_monitoring_config.cost_limits.hourly_max, daily_limit=_monitoring_config.cost_limits.daily_max
+    )
+
+    # Calculate projections
+    time_in_hour = (time.time() % 3600) / 3600  # Fraction of current hour elapsed
+    projected_hourly = usage_stats.burn_rate_per_hour / max(time_in_hour, 0.1)
+
+    usage_data = {
+        "current_usage": usage_stats.to_dict(),
+        "limits": {
+            "configured": {
+                "hourly_max": _monitoring_config.cost_limits.hourly_max,
+                "daily_max": _monitoring_config.cost_limits.daily_max,
+                "monthly_max": _monitoring_config.cost_limits.monthly_max,
+                "per_request_max": _monitoring_config.cost_limits.per_request_max,
+            },
+            "status": {
+                "within_limits": limit_check["within_limits"],
+                "warnings": limit_check["warnings"],
+                "hourly_utilization": usage_stats.burn_rate_per_hour / _monitoring_config.cost_limits.hourly_max,
+                "daily_utilization": usage_stats.burn_rate_per_day / _monitoring_config.cost_limits.daily_max,
+            },
+        },
+        "projections": {
+            "projected_hourly_cost": round(projected_hourly, 4),
+            "projected_daily_cost": round(usage_stats.burn_rate_per_day, 4),
+            "time_to_hourly_limit": (
+                max(
+                    0,
+                    (_monitoring_config.cost_limits.hourly_max - usage_stats.burn_rate_per_hour)
+                    / max(usage_stats.burn_rate_per_hour / max(time_in_hour, 0.1), 0.001),
+                )
+                if usage_stats.burn_rate_per_hour > 0
+                else float("inf")
+            ),
+        },
+        "configuration": _monitoring_config.to_dict(),
+        "client_stats": _cost_limiter.get_client_stats() if _monitoring_config.rate_limiting_enabled else {},
+        "timestamp": datetime.now(UTC).isoformat(),
+    }
+
+    return StreamingJSONResponse(usage_data, compress=True)
 
 
 async def _enhanced_sse_generator(
@@ -273,6 +353,21 @@ async def _enhanced_sse_generator(
                         f"heartbeat_{heartbeat_count}", {"status": "active", "uptime_minutes": heartbeat_count}
                     )
 
+                # Send usage updates every 3 heartbeats (30 seconds)
+                if heartbeat_count % 3 == 0 and _monitoring_config.enabled:
+                    try:
+                        usage_stats = await _usage_tracker.get_current_usage()
+                        usage_data = {
+                            "usage": usage_stats.to_dict(),
+                            "limits": {
+                                "hourly_max": _monitoring_config.cost_limits.hourly_max,
+                                "daily_max": _monitoring_config.cost_limits.daily_max,
+                            },
+                        }
+                        yield f"event: usage_update\ndata: {orjson.dumps(usage_data).decode()}\n\n".encode()
+                    except Exception as e:
+                        _logger.warning(f"Failed to send usage update: {e}")
+
     except asyncio.CancelledError:
         progress.complete("connection_closed", {"reason": "client_disconnect"})
         raise
@@ -286,7 +381,10 @@ async def _enhanced_sse_generator(
 
 
 async def enhanced_sse(request: Request) -> StreamingResponse:
-    """Enhanced SSE endpoint with capability negotiation."""
+    """Enhanced SSE endpoint with capability negotiation and cost limiting."""
+    # Check cost limits before processing
+    await _cost_limiter.enforce_limits(request)
+
     client_id = request.query_params.get("client_id")
     capabilities = {
         "compression": request.headers.get("Accept-Encoding", "").find("gzip") != -1,
@@ -349,9 +447,18 @@ async def websocket_endpoint(websocket: WebSocket) -> None:
             try:
                 while True:
                     await asyncio.sleep(30)
-                    await websocket.send_json(
-                        {"type": "ping", "timestamp": datetime.now(UTC).isoformat(), "session_id": session_id}
-                    )
+                    ping_data = {"type": "ping", "timestamp": datetime.now(UTC).isoformat(), "session_id": session_id}
+                    if _monitoring_config.enabled:
+                        try:
+                            usage_stats = await _usage_tracker.get_current_usage()
+                            ping_data["usage"] = {
+                                "tokens_used": usage_stats.tokens.total_tokens,
+                                "cost_usd": round(usage_stats.cost_usd, 4),
+                                "requests_count": usage_stats.requests_count,
+                            }
+                        except Exception:
+                            pass  # Don't fail ping if usage tracking fails
+                    await websocket.send_json(ping_data)
             except (WebSocketDisconnect, ConnectionClosed):
                 pass
 
@@ -466,6 +573,7 @@ routes = [
     Route("/health", endpoint=enhanced_health, methods=["GET"]),
     Route("/info", endpoint=enhanced_info, methods=["GET"]),
     Route("/metrics", endpoint=metrics_endpoint, methods=["GET"]),
+    Route("/usage", endpoint=usage_endpoint, methods=["GET"]),
     Route("/mcp/sse", endpoint=enhanced_sse, methods=["GET"]),
     Route("/stream", endpoint=streaming_data_endpoint, methods=["GET"]),
     WebSocketRoute("/mcp/ws", endpoint=websocket_endpoint),

@@ -14,6 +14,8 @@ A production-ready FastMCP server implementation using the official MCP SDK. Pro
 - **🚀 Dual Interface**: Both stdio and HTTP/SSE modes
 - **📝 Structured Logging**: JSON-formatted request lifecycle tracking
 - **📈 Progress Tracking**: Real-time progress monitoring with ETA calculation and hierarchical support
+- **💰 Usage Monitoring**: Comprehensive Claude API cost tracking and rate limiting
+- **🔄 Real-time Streaming**: Enhanced SSE/WebSocket with live usage updates
 - **🐳 Docker Ready**: Containerized deployment support
 
 ---
@@ -143,7 +145,48 @@ curl -H "Accept-Encoding: gzip" http://127.0.0.1:8000/stream
 - **Rate Limiting**: Protection against abuse with slowapi
 - **Security Headers**: Modern security headers and CORS configuration
 - **Performance Monitoring**: Built-in metrics and health checks
+- **Claude Usage Monitoring**: Comprehensive token usage and cost tracking
 - **Graceful Shutdown**: Proper connection cleanup and signal handling
+
+#### Claude Usage Monitoring & Cost Tracking
+
+The server now includes comprehensive Claude API usage monitoring with cost tracking:
+
+```bash
+# Usage tracking endpoint with detailed cost analysis
+curl http://127.0.0.1:8000/usage
+
+# Real-time usage streaming via SSE
+curl -N "http://127.0.0.1:8000/mcp/sse?client_id=usage-monitor"
+
+# Enhanced metrics with Claude usage data
+curl http://127.0.0.1:8000/metrics
+```
+
+**Monitoring Features:**
+- **Token Usage Tracking**: Real-time tracking of input, output, and cache tokens
+- **Cost Analysis**: Per-request and session cost monitoring with burn rate calculations
+- **Rate Limiting**: Cost-aware rate limiting to prevent budget overruns
+- **Progress Integration**: Cost tracking integrated with progress monitoring
+- **Real-time Streaming**: Live usage updates via SSE and WebSocket connections
+- **Configuration**: Environment-based configuration for limits and monitoring
+
+**Environment Variables for Monitoring:**
+```bash
+# Enable/disable monitoring
+export MCP_MONITORING_ENABLED=true
+
+# Cost limits
+export MCP_COST_HOURLY_MAX=10.0
+export MCP_COST_DAILY_MAX=100.0
+export MCP_COST_PER_REQUEST_MAX=1.0
+
+# Rate limiting
+export MCP_RATE_LIMITING_ENABLED=true
+
+# Refresh intervals
+export MCP_REFRESH_INTERVAL=30.0
+```
 
 #### JavaScript SSE Example
 

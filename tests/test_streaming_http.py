@@ -72,10 +72,43 @@ class TestEnhancedEndpoints:
             assert response.status_code == 200
 
             data = response.json()
-            assert "mcp_server_uptime_seconds" in data
-            assert "mcp_server_requests_total" in data
-            assert "mcp_server_active_connections" in data
-            assert "mcp_server_bytes_sent_total" in data
+            assert "server" in data
+            assert "claude_usage" in data
+            assert "cost_monitoring" in data
+            assert "timestamp" in data
+
+            # Check server metrics structure
+            server_metrics = data["server"]
+            assert "uptime_seconds" in server_metrics
+            assert "requests_total" in server_metrics
+
+            # Check Claude usage structure
+            usage_metrics = data["claude_usage"]
+            assert "tokens" in usage_metrics
+            assert "cost_usd" in usage_metrics
+
+    def test_usage_endpoint(self):
+        """Test detailed usage tracking endpoint."""
+        with TestClient(app) as client:
+            response = client.get("/usage")
+            assert response.status_code == 200
+
+            data = response.json()
+            assert "current_usage" in data
+            assert "limits" in data
+            assert "projections" in data
+            assert "configuration" in data
+            assert "timestamp" in data
+
+            # Check limits structure
+            limits = data["limits"]
+            assert "configured" in limits
+            assert "status" in limits
+
+            # Check projections
+            projections = data["projections"]
+            assert "projected_hourly_cost" in projections
+            assert "projected_daily_cost" in projections
 
 
 class TestEnhancedSSE:
