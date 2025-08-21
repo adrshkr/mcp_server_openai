@@ -19,6 +19,7 @@
     "orjson>=3.10.0",
     "brotli>=1.1.0",
     "psutil>=5.9.0",
+    "anthropic>=0.64.0",
 ]
 
 [tool.pytest.ini_options]
