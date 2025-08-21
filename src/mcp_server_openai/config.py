@@ -108,3 +108,11 @@ def get_prompt_vars(prompt_name: str, client_id: str | None = None) -> dict[str,
 
     merged = {**defaults, **client_overrides}
     return merged
+
+
+def get_notification_config() -> dict[str, Any]:
+    """
+    Retrieve notification configuration.
+    """
+    cfg = get_config()
+    return dict(cfg.get("notifications", {}) or {})
