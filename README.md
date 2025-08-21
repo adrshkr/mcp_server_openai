@@ -4,11 +4,11 @@
 [![FastMCP](https://img.shields.io/badge/FastMCP-compatible-green.svg)](https://github.com/jlowin/fastmcp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-A production-ready FastMCP server implementation using the official MCP SDK. Provides mathematical operations, web content fetching, PowerPoint generation, and intelligent prompt management with client-specific configurations.
+A production-ready FastMCP server implementation using the official MCP SDK. Provides mathematical operations, web content fetching, PowerPoint generation, enhanced content creation with MCP servers, and intelligent prompt management with client-specific configurations.
 
 ## ✨ Features
 
-- **🔧 Tools**: Mathematical operations, web fetching, PowerPoint content generation
+- **🔧 Tools**: Mathematical operations, web fetching, PowerPoint content generation, enhanced content creation with MCP servers
 - **📊 Resources**: Health monitoring and system status
 - **🎯 Prompts**: Jinja2-based templates with per-client customization
 - **🚀 Dual Interface**: Both stdio and HTTP/SSE modes
@@ -16,6 +16,7 @@ A production-ready FastMCP server implementation using the official MCP SDK. Pro
 - **📈 Progress Tracking**: Real-time progress monitoring with ETA calculation and hierarchical support
 - **💰 Usage Monitoring**: Comprehensive Claude API cost tracking and rate limiting
 - **🔄 Real-time Streaming**: Enhanced SSE/WebSocket with live usage updates
+- **🔌 MCP Server Integration**: Open-source MCP servers for enhanced content generation
 - **🐳 Docker Ready**: Containerized deployment support
 
 ---
@@ -29,6 +30,7 @@ A production-ready FastMCP server implementation using the official MCP SDK. Pro
   - [Stdio Mode](#stdio-mode-with-mcp-dev-inspector)
   - [HTTP Mode](#http-mode-with-sse)
 - [API Reference](#-api-reference)
+- [MCP Server Integration](#-mcp-server-integration)
 - [Progress Tracking](#-progress-tracking)
 - [Configuration](#-configuration)
 - [Testing](#-testing)
@@ -50,6 +52,9 @@ uv run mcp dev src/mcp_server_openai/server.py:app
 
 # Or run HTTP server
 uv run uvicorn mcp_server_openai.http_server:app --host 0.0.0.0 --port 8000
+
+# Try the enhanced content creator
+uv run python scripts/demo_enhanced_content.py
 ```
 
 ---
@@ -223,6 +228,28 @@ ws.onclose = (event) => {
 };
 ```
 
+### Enhanced Content Creator
+
+The Enhanced Content Creator provides intelligent PowerPoint generation using multiple MCP servers:
+
+```bash
+# Run the demo to see the enhanced content creator in action
+uv run python scripts/demo_enhanced_content.py
+
+# Use the CLI tool to create enhanced presentations
+uv run python scripts/call_tool.py enhanced_content.create params-enhanced-content-create.json
+
+# Or call directly via MCP
+uv run mcp dev src/mcp_server_openai/server.py:app
+```
+
+**Key Benefits:**
+- **🧠 Smart Planning**: Automatic content structure based on brief and notes
+- **🔍 Research Enhancement**: Web search integration for current information
+- **💾 Rich Content**: Professional bullet points, speaker notes, and visual suggestions
+- **🎨 Style Customization**: Multiple presentation styles and tones
+- **👥 Audience Targeting**: Tailored content for different audiences
+
 ### Legacy HTTP Mode
 
 ```bash
@@ -294,6 +321,58 @@ Generates PowerPoint presentations from structured data.
 
 **Output:** Saves to `output/<Client>/<Project>/content.pptx`
 
+#### `enhanced_content.create`
+Creates enhanced PowerPoint presentations using open-source MCP servers for intelligent content planning, research enhancement, and advanced content generation.
+
+**Parameters:**
+```json
+{
+  "number_of_slides": 5,
+  "brief": "AI Strategy and Implementation Roadmap",
+  "notes": "Market analysis shows 40% growth in AI adoption\nKey technologies: Machine Learning, NLP, Computer Vision\nImplementation phases: Pilot, Scale, Optimize\nSuccess metrics: ROI, User adoption, Performance improvement\nRisk factors: Data privacy, Technical debt, Change management",
+  "style": "professional",
+  "tone": "persuasive",
+  "audience": "executives",
+  "client_id": "enterprise_client"
+}
+```
+
+**Features:**
+- **🧠 Intelligent Planning**: Uses sequential thinking MCP server for logical structure
+- **🔍 Research Enhancement**: Integrates with Brave Search for content enhancement
+- **💾 Advanced Generation**: Leverages Memory server for rich content creation
+- **📁 Smart Output**: Filesystem server for organized output management
+- **🎨 Style Customization**: Professional, creative, academic, and startup styles
+- **🗣️ Tone Variations**: Concise, detailed, persuasive, and formal tones
+- **👥 Audience Targeting**: Executive, stakeholder, investor, and researcher audiences
+
+**Output:** Saves to `output/<Client>/<Project>/enhanced_presentation_<timestamp>.pptx`
+
+#### `enhanced_content.plan`
+Plans presentation structure using sequential thinking MCP server.
+
+**Parameters:**
+```json
+{
+  "brief": "Digital Transformation Strategy",
+  "notes": "Current state assessment\nTechnology roadmap\nChange management plan",
+  "number_of_slides": 4,
+  "style": "professional",
+  "tone": "persuasive",
+  "audience": "executives"
+}
+```
+
+#### `enhanced_content.enhance`
+Enhances content with research using Brave Search MCP server.
+
+**Parameters:**
+```json
+{
+  "query": "AI strategy implementation best practices"
+}
+```
+
 ### 📊 Resources
 
 #### `health://ping`
@@ -345,6 +424,80 @@ Template-based content creation system with rich customization.
 - **Async Support**: Fully asynchronous template rendering
 - **Template Health Checks**: Validation and error recovery systems
 - **Advanced Caching**: TTL-based caching with invalidation strategies
+
+---
+
+## 🔌 MCP Server Integration
+
+The Enhanced Content Creator integrates with multiple open-source MCP servers to provide intelligent content generation capabilities:
+
+### Available MCP Servers
+
+#### `@modelcontextprotocol/server-sequential-thinking`
+- **Purpose**: Intelligent content planning and structure organization
+- **Features**: Logical presentation flow, slide sequencing, content hierarchy
+- **Benefits**: Creates professional presentation structures automatically
+
+#### `@modelcontextprotocol/server-brave-search`
+- **Purpose**: Research enhancement and content enrichment
+- **Features**: Web search integration, industry best practices, case studies
+- **Benefits**: Adds current, relevant context to presentations
+
+#### `@modelcontextprotocol/server-memory`
+- **Purpose**: Advanced content generation and optimization
+- **Features**: Rich bullet points, speaker notes, visual suggestions
+- **Benefits**: Generates presentation-ready content with professional polish
+
+#### `@modelcontextprotocol/server-filesystem`
+- **Purpose**: Output management and file organization
+- **Features**: Structured file saving, client organization, timestamp management
+- **Benefits**: Organized, professional file output structure
+
+### Integration Benefits
+
+- **🧠 Intelligent Planning**: Automatic content structure based on brief and notes
+- **🔍 Research Enhancement**: Real-time content enhancement with web research
+- **💾 Rich Content**: Professional bullet points, speaker notes, and visual suggestions
+- **📁 Smart Organization**: Client-specific file organization and naming
+- **⚡ Performance**: Parallel processing with multiple MCP servers
+- **🔄 Fallback Support**: Graceful degradation when servers are unavailable
+
+### Configuration
+
+The MCP server integration is configurable via `config/enhanced_content.yaml`:
+
+```yaml
+enhanced_content:
+  mcp_servers:
+    sequential_thinking:
+      package: "@modelcontextprotocol/server-sequential-thinking"
+      enabled: true
+      timeout: 30
+      max_retries: 3
+    
+    brave_search:
+      package: "@modelcontextprotocol/server-brave-search"
+      enabled: true
+      timeout: 15
+      max_retries: 2
+```
+
+### Usage Examples
+
+```python
+# Enhanced content creation with MCP servers
+from mcp_server_openai.tools.enhanced_content_creator import create_enhanced_presentation
+
+result = await create_enhanced_presentation(
+    number_of_slides=5,
+    brief="AI Strategy Presentation",
+    notes="Market analysis\nTechnology trends\nImplementation roadmap",
+    style="professional",
+    tone="persuasive",
+    audience="executives",
+    client_id="enterprise_client"
+)
+```
 
 ---
 
@@ -637,7 +790,8 @@ src/mcp_server_openai/
 │   ├── __init__.py
 │   ├── math_tools.py        # Mathematical operations
 │   ├── web_tools.py         # Web content fetching
-│   └── content_creator.py   # PowerPoint generation
+│   ├── content_creator.py   # PowerPoint generation
+│   └── enhanced_content_creator.py # Enhanced content creation with MCP servers
 ├── resources/
 │   ├── __init__.py
 │   └── health.py            # Health check resources
@@ -656,12 +810,22 @@ scripts/
 ├── call_tool.py             # CLI tool caller
 ├── cli.sh                   # Shell utilities
 ├── preflight.py             # Code quality checks
-└── run.sh                   # Runtime scripts
+├── run.sh                   # Runtime scripts
+└── demo_enhanced_content.py # Enhanced content creator demo
+
+config/
+├── enhanced_content.yaml    # Enhanced content creator configuration
+└── ...
+
+params/
+├── params-content-create.json      # Content creation parameters
+└── params-enhanced-content-create.json # Enhanced content creation parameters
 
 tests/                       # Comprehensive test suite
 ├── conftest.py
 ├── test_*.py               # Unit tests for all modules
 ├── test_streaming_http.py  # Tests for modern streaming features
+├── test_enhanced_content_creator.py # Enhanced content creator tests
 └── ...
 ```
 
@@ -716,6 +880,18 @@ tests/                       # Comprehensive test suite
 **Code Quality & Type Safety Improvements**
 - ✅ Comprehensive mypy type checking with strict compliance
 - ✅ Enhanced type annotations across all modules
+
+**Enhanced Content Creator with MCP Server Integration**
+- ✅ Intelligent content planning using sequential thinking MCP server
+- ✅ Research enhancement with Brave Search MCP server
+- ✅ Advanced content generation with Memory MCP server
+- ✅ Smart output management with Filesystem MCP server
+- ✅ Multiple presentation styles (professional, creative, academic, startup)
+- ✅ Tone variations (concise, detailed, persuasive, formal)
+- ✅ Audience targeting (executives, stakeholders, investors, researchers)
+- ✅ Comprehensive test coverage (18 tests)
+- ✅ Demo script and configuration management
+- ✅ Seamless integration with existing progress tracking and logging
 - ✅ Fixed FastMCP compatibility issues
 - ✅ Improved error handling and validation
 - ✅ Added types-PyYAML for complete YAML type support

@@ -1,0 +1,189 @@
+# Enhanced Content Creator Configuration
+# Configuration for MCP server integration and content generation
+
+enhanced_content:
+  # MCP Server configurations
+  mcp_servers:
+    sequential_thinking:
+      package: "@modelcontextprotocol/server-sequential-thinking"
+      enabled: true
+      timeout: 30
+      max_retries: 3
+    
+    brave_search:
+      package: "@modelcontextprotocol/server-brave-search"
+      enabled: true
+      timeout: 15
+      max_retries: 2
+      api_key: "${BRAVE_SEARCH_API_KEY}"
+    
+    memory:
+      package: "@modelcontextprotocol/server-memory"
+      enabled: true
+      timeout: 20
+      max_retries: 2
+      memory_size: "1GB"
+    
+    filesystem:
+      package: "@modelcontextprotocol/server-filesystem"
+      enabled: true
+      timeout: 10
+      max_retries: 1
+      root_path: "./output"
+  
+  # Content generation settings
+  content_generation:
+    default_style: "professional"
+    default_tone: "concise"
+    default_audience: "stakeholders"
+    max_slides: 50
+    min_slides: 1
+    
+    # Slide type templates
+    slide_templates:
+      title:
+        layout: "title"
+        max_content_length: 100
+      
+      content:
+        layout: "title_and_content"
+        max_bullet_points: 8
+        max_content_length: 200
+      
+      summary:
+        layout: "title_and_content"
+        max_bullet_points: 6
+        max_content_length: 150
+      
+      chart:
+        layout: "title_and_content"
+        supports_charts: true
+        max_data_points: 10
+  
+  # Enhancement settings
+  enhancement:
+    # Research enhancement
+    research:
+      enabled: true
+      max_search_results: 5
+      include_sources: true
+      filter_duplicates: true
+    
+    # Content enhancement
+    content:
+      enabled: true
+      add_visual_suggestions: true
+      add_speaker_notes: true
+      enhance_bullet_points: true
+      max_enhancement_length: 300
+    
+    # Style enhancement
+    style:
+      enabled: true
+      suggest_colors: true
+      suggest_fonts: true
+      suggest_layouts: true
+  
+  # Output settings
+  output:
+    # File naming
+    naming:
+      prefix: "enhanced_presentation"
+      include_timestamp: true
+      include_client: true
+      include_project: true
+    
+    # Directory structure
+    directories:
+      base: "output"
+      create_subdirectories: true
+      organize_by_client: true
+      organize_by_project: true
+    
+    # File formats
+    formats:
+      pptx: true
+      pdf: false
+      html: false
+    
+    # Quality settings
+    quality:
+      compression: "balanced"
+      image_quality: "high"
+      embed_fonts: true
+  
+  # Performance settings
+  performance:
+    # Caching
+    caching:
+      enabled: true
+      cache_size: 100
+      cache_ttl: 3600  # 1 hour
+    
+    # Parallel processing
+    parallel:
+      enabled: true
+      max_workers: 4
+      chunk_size: 10
+    
+    # Timeouts
+    timeouts:
+      server_startup: 30
+      content_generation: 120
+      file_save: 30
+      total_operation: 300
+  
+  # Monitoring and logging
+  monitoring:
+    # Progress tracking
+    progress:
+      enabled: true
+      detailed_logging: true
+      performance_metrics: true
+    
+    # Error handling
+    error_handling:
+      log_errors: true
+      retry_failed_operations: true
+      fallback_to_basic: true
+      notify_on_failure: false
+    
+    # Usage tracking
+    usage:
+      track_api_calls: true
+      track_generation_time: true
+      track_file_sizes: true
+      track_enhancement_usage: true
+
+# Client-specific overrides
+clients:
+  default:
+    enhanced_content:
+      style: "professional"
+      tone: "concise"
+      audience: "stakeholders"
+  
+  enterprise:
+    enhanced_content:
+      style: "formal"
+      tone: "detailed"
+      audience: "executives"
+      max_slides: 30
+  
+  startup:
+    enhanced_content:
+      style: "creative"
+      tone: "persuasive"
+      audience: "investors"
+      max_slides: 15
+  
+  academic:
+    enhanced_content:
+      style: "academic"
+      tone: "detailed"
+      audience: "researchers"
+      max_slides: 40
+      enhancement:
+        research:
+          max_search_results: 10
+          include_sources: true
