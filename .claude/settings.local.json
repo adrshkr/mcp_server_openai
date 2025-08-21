@@ -15,9 +15,26 @@
       "Bash(python -m pytest tests/test_web_tools.py -v -x)",
       "Bash(make:*)",
       "Bash(uv run:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(uv add:*)",
+      "Bash(uv sync:*)",
+      "Bash(uv pip install:*)",
+      "Bash(python -m pytest tests/test_streaming_http.py::TestEnhancedSSE::test_enhanced_sse_basic -v --timeout=30)",
+      "Bash(timeout 30 python -m pytest tests/test_streaming_http.py::TestEnhancedSSE::test_enhanced_sse_basic -v)",
+      "Bash(timeout 15 python -m pytest tests/test_streaming_http.py::TestEnhancedEndpoints::test_enhanced_health -v)",
+      "Bash(timeout 15 python -m pytest tests/test_streaming_http.py::TestEnhancedSSE::test_enhanced_sse_basic -v)",
+      "Bash(timeout 10 python -m pytest:*)",
+      "Bash(python -m pytest tests/test_streaming_http.py::TestEnhancedSSE::test_enhanced_sse_basic -v)",
+      "Bash(python -m pytest tests/test_streaming_http.py::TestEnhancedSSE -v)",
+      "Bash(python -m pytest tests/test_streaming_http.py::TestEnhancedEndpoints -v)",
+      "Bash(python -m pytest tests/test_streaming_http.py -v --tb=short)",
+      "Bash(python -m pytest tests/test_streaming_http.py::TestStreamingResponses::test_streaming_data_endpoint tests/test_streaming_http.py::TestSecurityFeatures::test_cors_headers -v)",
+      "Bash(python -m pytest tests/test_streaming_http.py --tb=short -q)"
     ],
     "deny": [],
-    "ask": []
+    "ask": [],
+    "additionalDirectories": [
+      "C:\\c\\Users\\adars\\PycharmProjects\\PythonProject"
+    ]
   }
 }

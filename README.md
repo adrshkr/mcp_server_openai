@@ -102,27 +102,89 @@ After `pip install -e .`:
 uv run mcp dev mcp_server_openai.server:app
 ```
 
-### HTTP Mode with SSE
+### HTTP Mode with Modern Streaming
+
+The server now includes a modern streamable HTTP implementation with advanced features:
 
 ```bash
-# Start HTTP server
-uv run uvicorn mcp_server_openai.http_server:app --host 0.0.0.0 --port 8000
+# Start modern HTTP server
+uv run uvicorn mcp_server_openai.streaming_http:app --host 0.0.0.0 --port 8000
+
+# Or use enhanced server runner
+uv run python -m mcp_server_openai.enhanced_server --host 0.0.0.0 --port 8000
 
 # Health checks
-curl http://127.0.0.1:8000/health    # Returns: "ok"
+curl http://127.0.0.1:8000/health    # Enhanced health with metrics
 curl http://127.0.0.1:8000/info      # Server information
+curl http://127.0.0.1:8000/metrics   # Performance metrics
 
-# Server-Sent Events endpoint
+# Server-Sent Events endpoint with multiplexing
 curl -iN "http://127.0.0.1:8000/mcp/sse?client_id=local-test"
+
+# WebSocket connection for real-time communication  
+curl --include \
+     --no-buffer \
+     --header "Connection: Upgrade" \
+     --header "Upgrade: websocket" \
+     --header "Sec-WebSocket-Key: SGVsbG8sIHdvcmxkIQ==" \
+     --header "Sec-WebSocket-Version: 13" \
+     http://127.0.0.1:8000/mcp/ws
+
+# Streaming data endpoint with compression
+curl -H "Accept-Encoding: gzip" http://127.0.0.1:8000/stream
 ```
+
+#### Modern Features
+
+- **HTTP/2 Support**: ALPN negotiation for improved performance
+- **Enhanced SSE**: Multiplexing, capability negotiation, and compression
+- **WebSocket Integration**: Real-time bidirectional communication
+- **Response Compression**: gzip, brotli, and deflate support
+- **Rate Limiting**: Protection against abuse with slowapi
+- **Security Headers**: Modern security headers and CORS configuration
+- **Performance Monitoring**: Built-in metrics and health checks
+- **Graceful Shutdown**: Proper connection cleanup and signal handling
 
 #### JavaScript SSE Example
 
 ```javascript
-const es = new EventSource("http://127.0.0.1:8000/mcp/sse?client_id=local-test");
-es.addEventListener("ready", (e) => console.log("ready", e.data));
+// Enhanced SSE with multiplexing support
+const es = new EventSource("http://127.0.0.1:8000/mcp/sse?client_id=local-test&multiplex=true");
+es.addEventListener("ready", (e) => {
+    const data = JSON.parse(e.data);
+    console.log("Server capabilities:", data.server_capabilities);
+    console.log("Session ID:", data.session_id);
+});
+es.addEventListener("heartbeat", (e) => {
+    const data = JSON.parse(e.data);
+    console.log("Heartbeat:", data.heartbeat, "Active clients:", data.active_clients);
+});
 es.onmessage = (e) => console.log("message", e.data);
 es.onerror = (e) => console.error("sse error", e);
+```
+
+#### WebSocket Example
+
+```javascript
+const ws = new WebSocket("ws://127.0.0.1:8000/mcp/ws");
+ws.onopen = () => {
+    console.log("WebSocket connected");
+    ws.send(JSON.stringify({type: "ping", data: "Hello Server"}));
+};
+ws.onmessage = (event) => {
+    const data = JSON.parse(event.data);
+    console.log("Received:", data);
+};
+ws.onclose = (event) => {
+    console.log("WebSocket closed:", event.code, event.reason);
+};
+```
+
+### Legacy HTTP Mode
+
+```bash
+# Start legacy HTTP server (still available)
+uv run uvicorn mcp_server_openai.http_server:app --host 0.0.0.0 --port 8000
 ```
 
 ---
@@ -457,12 +519,14 @@ services:
 ### Make Commands
 
 ```bash
-make check      # Full check: preflight + tests + mypy
-make preflight  # Code formatting and linting
-make fmt        # Format code with Black
-make lint       # Lint with Ruff
-make test       # Run tests
-make run-http   # Start HTTP server
+make check       # Full check: preflight + tests + mypy
+make preflight   # Code formatting and linting
+make fmt         # Format code with Black
+make lint        # Lint with Ruff
+make test        # Run tests
+make run-http    # Start legacy HTTP server
+make run-stream  # Start modern streaming HTTP server
+make run-enhanced # Start enhanced server runner
 ```
 
 ### Code Quality
@@ -490,7 +554,11 @@ src/mcp_server_openai/
 ├── __main__.py              # CLI entrypoint
 ├── main.py                  # Main application logic
 ├── server.py                # FastMCP app factory + auto-discovery
-├── http_server.py           # HTTP/SSE server (Starlette)
+├── http_server.py           # Legacy HTTP/SSE server (Starlette)
+├── streaming_http.py        # Modern streamable HTTP server with advanced features
+├── enhanced_server.py       # Enhanced server runner with graceful shutdown
+├── server_config.py         # Configuration management system
+├── error_handling.py        # Comprehensive error handling and monitoring
 ├── config.py                # YAML/JSON config loader
 ├── logging_utils.py         # Structured JSON logging
 ├── progress.py              # Modern progress tracking with ETA & hierarchical support
@@ -518,6 +586,7 @@ scripts/
 tests/                       # Comprehensive test suite
 ├── conftest.py
 ├── test_*.py               # Unit tests for all modules
+├── test_streaming_http.py  # Tests for modern streaming features
 └── ...
 ```
 
@@ -545,6 +614,18 @@ tests/                       # Comprehensive test suite
 - ✅ Real-time progress events with customizable listeners
 - ✅ Context manager support for automatic progress tracking
 - ✅ Thread-safe operations and backwards compatibility
+
+**Milestone 3.3: Modern Streamable HTTP**
+- ✅ HTTP/2 support with ALPN negotiation for improved performance
+- ✅ Enhanced Server-Sent Events with multiplexing and capability negotiation
+- ✅ WebSocket integration for real-time bidirectional communication
+- ✅ Response compression support (gzip, brotli, deflate)
+- ✅ Rate limiting protection with slowapi integration
+- ✅ Modern security headers and CORS configuration
+- ✅ Performance monitoring with built-in metrics and health checks
+- ✅ Graceful shutdown with proper connection cleanup
+- ✅ Circuit breaker and retry patterns for fault tolerance
+- ✅ Enhanced server runner with signal handling
 
 **Features:**
 - 🔧 Mathematical operations (`math.add`, `math.sub`)
