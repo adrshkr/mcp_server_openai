@@ -336,7 +336,7 @@ class AdvancedOrchestrationEngine:
             if workflow_id not in self.workflows:
                 raise ValueError(f"Workflow not found: {workflow_id}")
 
-            workflow = self.workflows[workflow_id]
+            self.workflows[workflow_id]
 
             # Create execution instance
             execution = WorkflowExecution(

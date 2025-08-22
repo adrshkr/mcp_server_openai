@@ -116,8 +116,8 @@ class FileOperationResult:
     success: bool
     operation: str
     source_path: str
-    target_path: str | None = None
     message: str
+    target_path: str | None = None
     file_info: FileInfo | None = None
     error: str | None = None
     client_id: str | None = None
@@ -246,7 +246,7 @@ class FileSystemManager:
 
             # Read file content
             async with aiofiles.open(path, encoding="utf-8") as f:
-                content = await f.read()
+                await f.read()
 
             file_info = self._get_file_info(path)
 
@@ -624,7 +624,7 @@ class FileSystemManager:
 
             results: list[FileInfo] = []
 
-            for root, dirs, files in os.walk(search_dir):
+            for root, _dirs, files in os.walk(search_dir):
                 for file in files:
                     if len(results) >= max_results:
                         break

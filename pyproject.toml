@@ -7,6 +7,11 @@
   dependencies = [
     "mcp[cli]",
     "httpx",
+  "requests",
+  "aiofiles",
+  "langchain-openai",
+  "langchain-core",
+  "langchain-anthropic",
     "pydantic",
     "PyYAML",
     "python-pptx",

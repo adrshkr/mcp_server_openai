@@ -191,8 +191,8 @@ class MemoryDatabase:
 
                 cursor.execute(
                     """
-                    INSERT OR REPLACE INTO memory_items 
-                    (id, content_type, title, content, metadata, tags, created_at, updated_at, 
+                    INSERT OR REPLACE INTO memory_items
+                    (id, content_type, title, content, metadata, tags, created_at, updated_at,
                      access_count, last_accessed, size_bytes, hash, client_id, expires_at)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
@@ -240,7 +240,7 @@ class MemoryDatabase:
                     # Update access count and last accessed
                     cursor.execute(
                         """
-                        UPDATE memory_items 
+                        UPDATE memory_items
                         SET access_count = access_count + 1, last_accessed = ?
                         WHERE id = ?
                     """,
@@ -364,7 +364,7 @@ class MemoryDatabase:
 
                 cursor.execute(
                     """
-                    DELETE FROM memory_items 
+                    DELETE FROM memory_items
                     WHERE expires_at IS NOT NULL AND expires_at < ?
                 """,
                     (self._datetime_to_str(datetime.utcnow()),),
@@ -389,20 +389,26 @@ class MemoryServer:
     def __init__(self, db_path: str = DEFAULT_DB_PATH) -> None:
         self.database = MemoryDatabase(db_path)
         self.cleanup_task: asyncio.Task | None = None
-        self._start_cleanup_task()
 
     def _start_cleanup_task(self) -> None:
         """Start the background cleanup task."""
+        if self.cleanup_task is not None:
+            return
 
-        async def cleanup_loop() -> None:
-            while True:
-                try:
-                    await asyncio.sleep(DEFAULT_CLEANUP_INTERVAL)
-                    await self.database.cleanup_expired_items()
-                except Exception as e:
-                    logger.error(f"Cleanup task error: {e}")
+        try:
 
-        self.cleanup_task = asyncio.create_task(cleanup_loop())
+            async def cleanup_loop() -> None:
+                while True:
+                    try:
+                        await asyncio.sleep(DEFAULT_CLEANUP_INTERVAL)
+                        await self.database.cleanup_expired_items()
+                    except Exception as e:
+                        logger.error(f"Cleanup task error: {e}")
+
+            self.cleanup_task = asyncio.create_task(cleanup_loop())
+        except RuntimeError:
+            # No event loop running, will start task when needed
+            pass
 
     async def store_content(
         self,
@@ -415,6 +421,9 @@ class MemoryServer:
         ttl_days: int | None = None,
     ) -> str:
         """Store content in memory."""
+        # Start cleanup task if not already running
+        self._start_cleanup_task()
+
         try:
             # Generate unique ID
             item_id = str(uuid.uuid4())
@@ -507,9 +516,9 @@ class MemoryServer:
                 if client_id:
                     cursor.execute(
                         """
-                        SELECT content_type, COUNT(*) 
-                        FROM memory_items 
-                        WHERE client_id = ? 
+                        SELECT content_type, COUNT(*)
+                        FROM memory_items
+                        WHERE client_id = ?
                         GROUP BY content_type
                     """,
                         (client_id,),
@@ -517,8 +526,8 @@ class MemoryServer:
                 else:
                     cursor.execute(
                         """
-                        SELECT content_type, COUNT(*) 
-                        FROM memory_items 
+                        SELECT content_type, COUNT(*)
+                        FROM memory_items
                         GROUP BY content_type
                     """
                     )

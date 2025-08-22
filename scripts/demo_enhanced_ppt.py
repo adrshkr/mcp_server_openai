@@ -38,7 +38,10 @@ async def demo_basic_usage():
             "Success metrics and ROI projections",
             "Risk mitigation and contingency planning"
         ],
-        brief="Create a strategic presentation for our digital transformation initiative, highlighting key milestones, technology investments, and expected business outcomes.",
+        brief=(
+            "Create a strategic presentation for our digital transformation initiative, "
+            "highlighting key milestones, technology investments, and expected business outcomes."
+        ),
         target_length="8 slides",
         model_type="gpt-4o",
         template_preference="professional",
@@ -104,7 +107,10 @@ async def demo_content_analysis():
             "Stakeholder engagement strategies",
             "Long-term sustainability goals"
         ],
-        brief="Analyze our business practices and suggest a presentation structure for communicating our sustainability initiatives to investors and customers.",
+        brief=(
+            "Analyze our business practices and suggest a presentation structure "
+            "for communicating our sustainability initiatives to investors and customers."
+        ),
         target_length="10 slides",
         model_type="gpt-4o",
         client_id="analysis_client"
@@ -265,7 +271,10 @@ async def main():
     print("\nTo use the enhanced PPT generator:")
     print("1. Call the tool via MCP: enhanced_ppt.create")
     print("2. Use the CLI script: python scripts/call_tool.py enhanced_ppt.create params-enhanced-ppt-create.json")
-    print("3. Import and use in your code: from mcp_server_openai.tools.enhanced_ppt_generator import create_enhanced_presentation")
+    print(
+        "3. Import and use in your code: "
+        "from mcp_server_openai.tools.enhanced_ppt_generator import create_enhanced_presentation"
+    )
     print("\nFor more information, see the configuration file: config/enhanced_ppt.yaml")
 
 

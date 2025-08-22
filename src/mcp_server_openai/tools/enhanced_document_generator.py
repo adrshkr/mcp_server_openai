@@ -100,7 +100,7 @@ class PandocDocumentGenerator:
     def _find_pandoc(self) -> str:
         """Find Pandoc installation path."""
         try:
-            result = subprocess.run(["pandoc", "--version"], capture_output=True, text=True, check=True)
+            subprocess.run(["pandoc", "--version"], capture_output=True, text=True, check=True)
             return "pandoc"
         except (subprocess.CalledProcessError, FileNotFoundError):
             # Try common installation paths
@@ -108,7 +108,7 @@ class PandocDocumentGenerator:
             for path in common_paths:
                 if Path(path).exists():
                     return path
-            raise RuntimeError("Pandoc not found. Please install Pandoc first.")
+            raise RuntimeError("Pandoc not found. Please install Pandoc first.") from None
 
     async def generate_document(self, request: DocumentRequest) -> DocumentResult:
         """Generate document using Pandoc."""
@@ -128,7 +128,7 @@ class PandocDocumentGenerator:
             cmd = self._build_pandoc_command(input_file, output_file, request)
 
             # Execute Pandoc
-            result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+            subprocess.run(cmd, capture_output=True, text=True, check=True)
 
             # Clean up input file
             os.unlink(input_file)
@@ -411,7 +411,7 @@ class HTMLDocumentGenerator:
             </div>
         </div>
     </header>
-    
+
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
             <aside id="toc" class="lg:col-span-1">
@@ -422,7 +422,7 @@ class HTMLDocumentGenerator:
                     </nav>
                 </div>
             </aside>
-            
+
             <article id="content" class="lg:col-span-3">
                 <div class="prose prose-lg max-w-none">
                     {{content}}
@@ -430,7 +430,7 @@ class HTMLDocumentGenerator:
             </article>
         </div>
     </main>
-    
+
     <footer class="bg-white border-t border-gray-200 mt-16">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <p class="text-center text-gray-500">&copy; {{year}} {{author}}. All rights reserved.</p>
@@ -451,7 +451,9 @@ class HTMLDocumentGenerator:
     <meta name="author" content="{{author}}">
     <title>{{title}}</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400;600;700&display=swap"
+        rel="stylesheet">
     <style>
         body { font-family: 'Source Sans Pro', sans-serif; }
         .academic-content { max-width: 70ch; margin: 0 auto; }
@@ -459,7 +461,12 @@ class HTMLDocumentGenerator:
         .academic-content h2 { font-size: 1.5rem; font-weight: 600; margin-bottom: 1rem; margin-top: 2rem; }
         .academic-content h3 { font-size: 1.25rem; font-weight: 600; margin-bottom: 0.75rem; }
         .academic-content p { margin-bottom: 1.25rem; line-height: 1.8; text-align: justify; }
-        .academic-content blockquote { border-left: 4px solid #e5e7eb; padding-left: 1rem; margin: 1.5rem 0; font-style: italic; }
+        .academic-content blockquote {
+            border-left: 4px solid #e5e7eb;
+            padding-left: 1rem;
+            margin: 1.5rem 0;
+            font-style: italic;
+        }
         .academic-content .citation { font-size: 0.875rem; color: #6b7280; margin-top: 0.5rem; }
     </style>
 </head>
@@ -473,13 +480,13 @@ class HTMLDocumentGenerator:
             </div>
         </div>
     </header>
-    
+
     <main class="max-w-4xl mx-auto px-4 py-12">
         <div class="academic-content">
             {{content}}
         </div>
     </main>
-    
+
     <footer class="bg-gray-100 border-t border-gray-200 mt-16">
         <div class="max-w-4xl mx-auto px-4 py-8">
             <p class="text-center text-gray-600">Academic Document - {{title}}</p>
@@ -500,16 +507,30 @@ class HTMLDocumentGenerator:
     <meta name="author" content="{{author}}">
     <title>{{title}}</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <style>
         body { font-family: 'Poppins', sans-serif; }
         .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
         .creative-content { max-width: 75ch; margin: 0 auto; }
-        .creative-content h1 { font-size: 3rem; font-weight: 800; margin-bottom: 2rem; background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .creative-content h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 2rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
         .creative-content h2 { font-size: 2rem; font-weight: 700; margin-bottom: 1.5rem; color: #4f46e5; }
         .creative-content h3 { font-size: 1.5rem; font-weight: 600; margin-bottom: 1rem; color: #7c3aed; }
         .creative-content p { margin-bottom: 1.5rem; line-height: 1.8; font-size: 1.1rem; }
-        .card { background: white; border-radius: 1rem; padding: 2rem; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
+        .card {
+            background: white;
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
     </style>
 </head>
 <body class="gradient-bg min-h-screen">
@@ -517,7 +538,7 @@ class HTMLDocumentGenerator:
         <h1 class="text-6xl font-bold mb-4">{{title}}</h1>
         <p class="text-xl opacity-90">Creative Document</p>
     </header>
-    
+
     <main class="max-w-6xl mx-auto px-4 pb-16">
         <div class="card">
             <div class="creative-content">
@@ -580,7 +601,12 @@ class HTMLDocumentGenerator:
         .corporate-content h2 { font-size: 1.75rem; font-weight: 600; margin-bottom: 1.25rem; color: #374151; }
         .corporate-content h3 { font-size: 1.375rem; font-weight: 500; margin-bottom: 1rem; color: #4b5563; }
         .corporate-content p { margin-bottom: 1.25rem; line-height: 1.75; color: #6b7280; }
-        .corporate-content .highlight { background-color: #f3f4f6; padding: 1rem; border-radius: 0.5rem; border-left: 4px solid #3b82f6; }
+        .corporate-content .highlight {
+            background-color: #f3f4f6;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border-left: 4px solid #3b82f6;
+        }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-900">
@@ -595,7 +621,7 @@ class HTMLDocumentGenerator:
             </div>
         </div>
     </header>
-    
+
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
             <div class="corporate-content">
@@ -603,7 +629,7 @@ class HTMLDocumentGenerator:
             </div>
         </div>
     </main>
-    
+
     <footer class="bg-white border-t border-gray-200 mt-16">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div class="text-center text-gray-500">

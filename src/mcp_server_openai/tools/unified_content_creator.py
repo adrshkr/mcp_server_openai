@@ -230,7 +230,7 @@ class MCPMemoryClient:
 
                 data = response.json()
                 return data.get("context")
-            
+
         except Exception as e:
             logger.warning(f"Memory retrieval failed: {e}")
             return None
@@ -416,7 +416,7 @@ class UnifiedContentCreator:
             if image_result and hasattr(image_result, "url"):
                 return [{"url": image_result.url, "provider": "unsplash", "title": section_data["title"]}]
 
-                except Exception as e:
+        except Exception as e:
             logger.warning(f"Image generation failed for section {section_data['title']}: {e}")
 
         return []
@@ -440,7 +440,7 @@ class UnifiedContentCreator:
             if icon_result and hasattr(icon_result, "url"):
                 return [{"url": icon_result.url, "provider": "lucide", "title": section_data["title"]}]
 
-                except Exception as e:
+        except Exception as e:
             logger.warning(f"Icon generation failed for section {section_data['title']}: {e}")
 
         return []
@@ -471,11 +471,11 @@ class UnifiedContentCreator:
             notes = [section.content for section in sections]
             result = await create_enhanced_presentation(
                 notes=notes,
-                    brief=request.brief,
+                brief=request.brief,
                 target_length=f"{len(sections)} slides",
                 template_preference=request.content_style,
-                    include_images=request.include_images,
-                    language=request.language,
+                include_images=request.include_images,
+                language=request.language,
                 client_id=request.client_id,
             )
 
@@ -709,13 +709,13 @@ async def create_unified_content(
         branding=branding,
         client_id=client_id,
     )
-    
+
     return await _content_creator.create_content(request)
 
 
 def register(mcp) -> None:
     """Register the unified content creator tools with the MCP server."""
-    
+
     @mcp.tool()
     async def unified_content_create(
         title: str,
@@ -762,14 +762,14 @@ def register(mcp) -> None:
                 {
                     "status": result.status,
                     "title": result.title,
-                "output_format": result.output_format,
+                    "output_format": result.output_format,
                     "file_path": result.file_path,
                     "file_size": result.file_size,
                     "sections_count": len(result.sections),
                     "images_used": result.images_used,
                     "icons_used": result.icons_used,
-                "processing_time": result.processing_time,
-                "error_message": result.error_message,
+                    "processing_time": result.processing_time,
+                    "error_message": result.error_message,
                 },
                 indent=2,
             )
@@ -779,7 +779,7 @@ def register(mcp) -> None:
             return json.dumps(
                 {"status": "error", "error_message": str(e), "title": title, "output_format": output_format}, indent=2
             )
-    
+
     @mcp.tool()
     async def unified_content_formats() -> str:
         """Get list of supported output formats and their capabilities."""
@@ -793,13 +793,13 @@ def register(mcp) -> None:
                 "description": "Word document with rich formatting",
                 "features": ["Text formatting", "Images", "Icons", "Tables", "Headers"],
                 "best_for": ["Reports", "Proposals", "Documentation", "Manuals"],
-                },
-                "pdf": {
+            },
+            "pdf": {
                 "description": "Portable Document Format for sharing",
                 "features": ["Fixed layout", "Images", "Icons", "Print-ready", "Universal"],
                 "best_for": ["Final documents", "Print materials", "Archiving", "Sharing"],
-                },
-                "html": {
+            },
+            "html": {
                 "description": "Web-ready HTML with responsive design",
                 "features": ["Web compatible", "Images", "Icons", "Responsive", "Interactive"],
                 "best_for": ["Web content", "Email templates", "Digital publishing", "Online sharing"],

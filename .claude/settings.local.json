@@ -73,7 +73,11 @@
       "Bash(timeout 10 npx @modelcontextprotocol/server-filesystem)",
       "Bash(timeout 10 npx @modelcontextprotocol/server-memory)",
       "Bash(git rm:*)",
-      "Bash(git config:*)"
+      "Bash(git config:*)",
+      "Bash(ruff check:*)",
+      "Bash(source:*)",
+      "Bash(pip install:*)",
+      "Bash(PYTHONPATH=src python -m pytest tests/test_cli.py::test_cli_import_main -v)"
     ],
     "deny": [],
     "ask": [],

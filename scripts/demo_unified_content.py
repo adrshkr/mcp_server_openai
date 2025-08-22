@@ -37,7 +37,10 @@ async def demo_basic_content_creation():
     
     # Sample content
     title = "AI-Powered Content Creation: The Future of Digital Marketing"
-    brief = "An exploration of how artificial intelligence is revolutionizing content creation and digital marketing strategies."
+    brief = (
+        "An exploration of how artificial intelligence is revolutionizing "
+        "content creation and digital marketing strategies."
+    )
     notes = [
         "AI tools are transforming content creation workflows",
         "Machine learning algorithms can generate personalized content",

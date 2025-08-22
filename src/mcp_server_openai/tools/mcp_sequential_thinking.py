@@ -145,24 +145,6 @@ class SequentialThinkingEngine:
         """Analyze the content brief and notes."""
         try:
             # Use LLM to analyze content
-            analysis_prompt = f"""
-            Analyze the following content for {request.content_type} creation:
-            
-            Brief: {request.brief}
-            Notes: {request.notes}
-            Target Length: {request.target_length}
-            Style: {request.style}
-            Tone: {request.tone}
-            Audience: {request.audience}
-            
-            Provide analysis in JSON format with:
-            - content_type: Type of content
-            - key_themes: Main themes identified
-            - target_audience: Audience analysis
-            - content_complexity: Complexity assessment
-            - suggested_approach: Recommended approach
-            - potential_challenges: Identified challenges
-            """
 
             # For now, return a structured analysis
             # In production, this would call an LLM
@@ -507,7 +489,7 @@ class SequentialThinkingEngine:
 
         # Calculate optimization score
         completeness_score = validation_result.get("completeness_score", 0.0)
-        if isinstance(completeness_score, (int, float)):
+        if isinstance(completeness_score, int | float):
             optimization_result["optimization_score"] = min(1.0, completeness_score + 0.2)
         else:
             optimization_result["optimization_score"] = 0.5

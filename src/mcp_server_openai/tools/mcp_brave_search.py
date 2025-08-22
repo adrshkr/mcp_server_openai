@@ -167,7 +167,10 @@ class BraveSearchClient:
             mock_result = SearchResult(
                 title=f"Mock Result {i+1} for '{request.query}'",
                 url=f"https://example.com/result-{i+1}",
-                description=f"This is a mock search result for the query '{request.query}'. It provides sample content for testing purposes.",
+                description=(
+                    f"This is a mock search result for the query '{request.query}'. "
+                    "It provides sample content for testing purposes."
+                ),
                 source="Mock Source",
                 relevance_score=0.8 - (i * 0.1),
                 content_type="article",

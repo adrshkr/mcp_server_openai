@@ -1049,30 +1049,30 @@ if __name__ == "__main__":
         # Sample content for validation
         sample_content = """
         # AI in Healthcare: Opportunities and Challenges
-        
-        Artificial Intelligence (AI) is transforming healthcare delivery across the globe. 
-        This presentation explores the current state of AI applications in healthcare, 
-        identifies key challenges and opportunities, and provides actionable recommendations 
+
+        Artificial Intelligence (AI) is transforming healthcare delivery across the globe.
+        This presentation explores the current state of AI applications in healthcare,
+        identifies key challenges and opportunities, and provides actionable recommendations
         for successful implementation.
-        
+
         ## Current Applications
-        
+
         AI is currently being used in:
         - Medical imaging and diagnostics
         - Drug discovery and development
         - Patient care and monitoring
         - Administrative tasks and scheduling
-        
+
         ## Key Challenges
-        
+
         Despite its potential, AI implementation faces several challenges:
         - Data privacy and security concerns
         - Regulatory compliance requirements
         - Integration with existing systems
         - Staff training and adoption
-        
+
         ## Recommendations
-        
+
         To successfully implement AI in healthcare:
         1. Start with pilot projects
         2. Ensure robust data governance

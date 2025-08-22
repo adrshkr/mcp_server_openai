@@ -377,7 +377,10 @@ class MCPServerDiscovery:
                 message = f"{system_status.healthy_servers}/{system_status.total_servers} MCP servers are healthy"
             else:
                 status = "error"
-                message = f"System health check failed: {system_status.healthy_servers}/{system_status.total_servers} servers healthy"
+                message = (
+                    f"System health check failed: {system_status.healthy_servers}/"
+                    f"{system_status.total_servers} servers healthy"
+                )
 
             response = DiscoveryResponse(status=status, message=message, system_status=system_status)
 

@@ -403,7 +403,10 @@ async def main():
                 print(f"⚠️ Server responded with status {response.status_code}")
     except Exception as e:
         print(f"❌ Cannot connect to server: {e}")
-        print("💡 Make sure the server is running with: uv run uvicorn mcp_server_openai.streaming_http:app --host 0.0.0.0 --port 8000")
+        print(
+            "💡 Make sure the server is running with: "
+            "uv run uvicorn mcp_server_openai.streaming_http:app --host 0.0.0.0 --port 8000"
+        )
         return
     
     # Run all tests

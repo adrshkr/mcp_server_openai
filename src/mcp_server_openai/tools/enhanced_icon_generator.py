@@ -142,7 +142,7 @@ class LucideIconClient:
 
     async def search_icons(self, query: str, count: int = 1, style: str = "outline") -> list[IconResult]:
         """Search for icons using Lucide API."""
-        async with httpx.AsyncClient(timeout=30) as client:
+        async with httpx.AsyncClient(timeout=30):
             try:
                 # Lucide doesn't have a search API, so we'll use a predefined set of common icons
                 # and filter based on the query
