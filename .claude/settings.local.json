@@ -72,7 +72,8 @@
       "Bash(timeout 10 npx jparkerweb/mcp-sqlite)",
       "Bash(timeout 10 npx @modelcontextprotocol/server-filesystem)",
       "Bash(timeout 10 npx @modelcontextprotocol/server-memory)",
-      "Bash(git rm:*)"
+      "Bash(git rm:*)",
+      "Bash(git config:*)"
     ],
     "deny": [],
     "ask": [],
