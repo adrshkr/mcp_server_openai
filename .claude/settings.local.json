@@ -77,7 +77,10 @@
       "Bash(ruff check:*)",
       "Bash(source:*)",
       "Bash(pip install:*)",
-      "Bash(PYTHONPATH=src python -m pytest tests/test_cli.py::test_cli_import_main -v)"
+      "Bash(PYTHONPATH=src python -m pytest tests/test_cli.py::test_cli_import_main -v)",
+      "mcp__sequential__sequentialthinking",
+      "Bash(bash:*)",
+      "Bash(grep:*)"
     ],
     "deny": [],
     "ask": [],

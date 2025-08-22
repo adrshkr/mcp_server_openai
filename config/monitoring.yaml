@@ -1,0 +1,171 @@
+# Monitoring configuration for MCP Server OpenAI
+# Optimized for GCP Cloud Run deployment
+
+monitoring:
+  enabled: true
+  
+  # Health Check Configuration
+  health_checks:
+    startup:
+      path: "/health/startup"
+      timeout_seconds: 10
+      initial_delay_seconds: 10
+      period_seconds: 10
+      failure_threshold: 3
+    
+    liveness:
+      path: "/health/live"
+      timeout_seconds: 5
+      initial_delay_seconds: 30
+      period_seconds: 30
+      failure_threshold: 3
+    
+    readiness:
+      path: "/health/ready"
+      timeout_seconds: 5
+      initial_delay_seconds: 5
+      period_seconds: 10
+      failure_threshold: 3
+  
+  # Performance Metrics
+  performance:
+    # Response time thresholds (milliseconds)
+    response_time:
+      target_p50: 100
+      target_p95: 500
+      target_p99: 1000
+      critical_threshold: 5000
+    
+    # Resource usage thresholds
+    resources:
+      cpu_warning: 70    # percentage
+      cpu_critical: 90   # percentage
+      memory_warning: 70 # percentage
+      memory_critical: 90 # percentage
+      disk_warning: 80   # percentage
+      disk_critical: 95  # percentage
+    
+    # Request rate limits
+    rate_limits:
+      requests_per_minute: 60
+      concurrent_requests: 10
+      burst_limit: 20
+  
+  # Error Rate Monitoring
+  errors:
+    # Error rate thresholds
+    rates:
+      warning: 1.0   # 1% error rate
+      critical: 5.0  # 5% error rate
+    
+    # HTTP status codes to monitor
+    monitored_status_codes:
+      - 400  # Bad Request
+      - 401  # Unauthorized
+      - 403  # Forbidden
+      - 404  # Not Found
+      - 429  # Too Many Requests
+      - 500  # Internal Server Error
+      - 502  # Bad Gateway
+      - 503  # Service Unavailable
+      - 504  # Gateway Timeout
+  
+  # Alerting Configuration
+  alerts:
+    enabled: true
+    
+    # Alert channels (configure in GCP)
+    notification_channels:
+      - email: "alerts@your-domain.com"
+      - slack: "https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK"
+    
+    # Alert policies
+    policies:
+      high_error_rate:
+        condition: "error_rate > 5%"
+        duration: "5m"
+        severity: "critical"
+      
+      high_latency:
+        condition: "p95_latency > 1000ms"
+        duration: "3m"
+        severity: "warning"
+      
+      high_cpu_usage:
+        condition: "cpu_usage > 90%"
+        duration: "2m"
+        severity: "warning"
+      
+      service_down:
+        condition: "availability < 99%"
+        duration: "1m"
+        severity: "critical"
+  
+  # Logging Configuration
+  logging:
+    level: "INFO"
+    format: "json"
+    
+    # Log retention (days)
+    retention_days: 30
+    
+    # Structured logging fields
+    fields:
+      - timestamp
+      - level
+      - message
+      - request_id
+      - user_id
+      - endpoint
+      - method
+      - status_code
+      - response_time
+      - error_details
+  
+  # Cost Monitoring
+  cost_tracking:
+    enabled: true
+    
+    # Budget alerts
+    budgets:
+      daily_limit: 10.0   # USD
+      weekly_limit: 50.0  # USD
+      monthly_limit: 200.0 # USD
+    
+    # API usage tracking
+    api_costs:
+      openai_max_daily: 5.0
+      anthropic_max_daily: 3.0
+      google_max_daily: 2.0
+  
+  # Dashboard Configuration
+  dashboards:
+    gcp_monitoring:
+      enabled: true
+      refresh_interval: "1m"
+      
+      # Dashboard panels
+      panels:
+        - name: "Request Rate"
+          type: "line_chart"
+          metrics: ["http_requests_per_second"]
+        
+        - name: "Response Time"
+          type: "line_chart"
+          metrics: ["http_request_duration_percentile"]
+        
+        - name: "Error Rate"
+          type: "stat"
+          metrics: ["http_errors_percentage"]
+        
+        - name: "CPU Usage"
+          type: "gauge"
+          metrics: ["cpu_usage_percentage"]
+        
+        - name: "Memory Usage"
+          type: "gauge"
+          metrics: ["memory_usage_percentage"]
+        
+        - name: "Health Status"
+          type: "stat"
+          metrics: ["health_check_status"]
