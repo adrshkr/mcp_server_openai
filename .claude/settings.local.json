@@ -84,7 +84,8 @@
       "Bash(timeout 30 uv run mypy:*)",
       "Bash(timeout 90 make check)",
       "Bash(timeout 20 uv run:*)",
-      "Bash(timeout 60 uv run:*)"
+      "Bash(timeout 60 uv run:*)",
+      "Bash(/dev/null)"
     ],
     "deny": [],
     "ask": [],

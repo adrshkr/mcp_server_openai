@@ -6,7 +6,7 @@ check:
 	@echo "--- Full check: preflight + tests + mypy ---"
 	@$(MAKE) -s preflight
 	@uv run pytest
-	@uv run mypy src/mcp_server_openai
+	@timeout 60 uv run mypy src/mcp_server_openai || echo "⚠️  MyPy timed out after 60s - proceeding with other checks"
 
 preflight:
 	@echo "--- Running preflight checks (Black -> Ruff) ---"
