@@ -80,7 +80,11 @@
       "Bash(PYTHONPATH=src python -m pytest tests/test_cli.py::test_cli_import_main -v)",
       "mcp__sequential__sequentialthinking",
       "Bash(bash:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(timeout 30 uv run mypy:*)",
+      "Bash(timeout 90 make check)",
+      "Bash(timeout 20 uv run:*)",
+      "Bash(timeout 60 uv run:*)"
     ],
     "deny": [],
     "ask": [],

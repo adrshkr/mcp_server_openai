@@ -139,10 +139,10 @@ class SecureConfig:
 class SecurityLogger:
     """Security event logging utility."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.security_logger = logging.getLogger("security")
 
-    def log_security_event(self, event_type: str, details: dict[str, Any], level: str = "warning"):
+    def log_security_event(self, event_type: str, details: dict[str, Any], level: str = "warning") -> None:
         """
         Log security-related events.
 
@@ -156,19 +156,19 @@ class SecurityLogger:
         log_method = getattr(self.security_logger, level.lower(), self.security_logger.warning)
         log_method(f"Security event: {event_type}", extra=log_data)
 
-    def log_auth_failure(self, client_ip: str, endpoint: str, reason: str):
+    def log_auth_failure(self, client_ip: str, endpoint: str, reason: str) -> None:
         """Log authentication failure."""
         self.log_security_event(
             "auth_failure", {"client_ip": client_ip, "endpoint": endpoint, "reason": reason}, "warning"
         )
 
-    def log_rate_limit_exceeded(self, client_ip: str, endpoint: str, limit: int):
+    def log_rate_limit_exceeded(self, client_ip: str, endpoint: str, limit: int) -> None:
         """Log rate limit exceeded event."""
         self.log_security_event(
             "rate_limit_exceeded", {"client_ip": client_ip, "endpoint": endpoint, "limit": limit}, "warning"
         )
 
-    def log_suspicious_activity(self, client_ip: str, details: dict[str, Any]):
+    def log_suspicious_activity(self, client_ip: str, details: dict[str, Any]) -> None:
         """Log suspicious activity."""
         self.log_security_event("suspicious_activity", {"client_ip": client_ip, **details}, "error")
 
@@ -205,17 +205,18 @@ def get_cors_origins() -> list[str]:
 def is_development() -> bool:
     """Check if running in development mode."""
     environment = SecureConfig.get_secret("ENVIRONMENT", "development")
-    return environment.lower() in ("development", "dev", "local")
+    return (environment or "development").lower() in ("development", "dev", "local")
 
 
 def is_debug_enabled() -> bool:
     """Check if debug mode is enabled."""
     debug = SecureConfig.get_secret("DEBUG", "false")
-    return debug.lower() in ("true", "1", "yes", "on")
+    return (debug or "false").lower() in ("true", "1", "yes", "on")
 
 
 def get_log_level() -> str:
     """Get logging level from environment."""
     level = SecureConfig.get_secret("LOG_LEVEL", "INFO")
     valid_levels = ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
-    return level.upper() if level.upper() in valid_levels else "INFO"
+    level_str = (level or "INFO").upper()
+    return level_str if level_str in valid_levels else "INFO"

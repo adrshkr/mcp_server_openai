@@ -23,11 +23,11 @@ logger = logging.getLogger(__name__)
 class HealthChecker:
     """Comprehensive health checking for the MCP server."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.start_time = datetime.now(UTC)
-        self.last_health_check = None
-        self.failed_checks = {}
-        self.dependency_cache = {}
+        self.last_health_check: datetime | None = None
+        self.failed_checks: dict[str, Any] = {}
+        self.dependency_cache: dict[str, tuple[dict[str, Any], datetime]] = {}
         self.cache_ttl = 30  # Cache health results for 30 seconds
 
     async def startup_check(self) -> dict[str, Any]:
@@ -35,7 +35,7 @@ class HealthChecker:
         Comprehensive startup health check.
         Used by Cloud Run startup probe.
         """
-        checks = {
+        checks: dict[str, Any] = {
             "timestamp": datetime.now(UTC).isoformat(),
             "startup_time": (datetime.now(UTC) - self.start_time).total_seconds(),
             "status": "healthy",
@@ -76,7 +76,7 @@ class HealthChecker:
         Liveness probe - determines if container should be restarted.
         Should be lightweight and fast.
         """
-        checks = {
+        checks: dict[str, Any] = {
             "timestamp": datetime.now(UTC).isoformat(),
             "status": "healthy",
             "uptime": (datetime.now(UTC) - self.start_time).total_seconds(),
@@ -113,7 +113,7 @@ class HealthChecker:
         Readiness probe - determines if container can accept traffic.
         More comprehensive than liveness check.
         """
-        checks = {"timestamp": datetime.now(UTC).isoformat(), "status": "healthy", "checks": {}}
+        checks: dict[str, Any] = {"timestamp": datetime.now(UTC).isoformat(), "status": "healthy", "checks": {}}
 
         try:
             # Configuration check
@@ -146,7 +146,7 @@ class HealthChecker:
         """
         Detailed status information for monitoring and debugging.
         """
-        status = {
+        status: dict[str, Any] = {
             "timestamp": datetime.now(UTC).isoformat(),
             "start_time": self.start_time.isoformat(),
             "uptime_seconds": (datetime.now(UTC) - self.start_time).total_seconds(),
