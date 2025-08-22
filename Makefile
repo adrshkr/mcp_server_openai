@@ -1,4 +1,4 @@
-.PHONY: all check preflight fmt lint test clean run docker-build docker-run compose-up compose-down
+.PHONY: all check preflight fmt lint test clean run docker-build docker-run compose-up compose-down mypy-check mypy-full mypy-core
 
 all: check
 
@@ -6,7 +6,19 @@ check:
 	@echo "--- Full check: preflight + tests + mypy ---"
 	@$(MAKE) -s preflight
 	@uv run pytest
-	@timeout 60 uv run mypy src/mcp_server_openai || echo "⚠️  MyPy timed out after 60s - proceeding with other checks"
+	@$(MAKE) -s mypy-check
+
+mypy-check:
+	@echo "--- Running MyPy type checking (core files) ---"
+	@$(MAKE) -s mypy-core
+
+mypy-full:
+	@echo "--- Running full MyPy type checking (may be slow) ---"  
+	@uv run mypy src/mcp_server_openai
+
+mypy-core:
+	@echo "--- Running MyPy on core files only ---"
+	@uv run mypy src/mcp_server_openai/__init__.py src/mcp_server_openai/__main__.py src/mcp_server_openai/server.py src/mcp_server_openai/health.py src/mcp_server_openai/security.py src/mcp_server_openai/http_server.py
 
 preflight:
 	@echo "--- Running preflight checks (Black -> Ruff) ---"

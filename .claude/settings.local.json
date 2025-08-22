@@ -85,7 +85,9 @@
       "Bash(timeout 90 make check)",
       "Bash(timeout 20 uv run:*)",
       "Bash(timeout 60 uv run:*)",
-      "Bash(/dev/null)"
+      "Bash(/dev/null)",
+      "Bash(find:*)",
+      "Bash(timeout 10 uv run mypy --config-file mypy.ini src/mcp_server_openai/__init__.py)"
     ],
     "deny": [],
     "ask": [],
