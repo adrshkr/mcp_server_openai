@@ -48,12 +48,37 @@
       "Bash(cp:*)",
       "Bash(~/.claude/statusline-manager.sh test:*)",
       "Bash(ccusage --help)",
-      "Bash(ccusage blocks:*)"
+      "Bash(ccusage blocks:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(uv tool install:*)",
+      "Bash(claude-monitor --version)",
+      "Bash(claude-monitor:*)",
+      "Bash(uv venv:*)",
+      "Bash(node:*)",
+      "Bash(npm:*)",
+      "Bash(git clone:*)",
+      "Bash(bun:*)",
+      "Bash(source ~/.bashrc)",
+      "Bash(~/.bun/bin/bun:*)",
+      "Bash(mkdir:*)",
+      "Bash(claude config --help)",
+      "Bash(claude config list)",
+      "Bash(claude config set permissionMode acceptEdits)",
+      "Bash(claude config set:*)",
+      "Bash(claude config list:*)",
+      "Bash(claude --dangerously-skip-permissions)",
+      "Bash(timeout 10 npx @modelcontextprotocol/server-git)",
+      "Bash(timeout 10 npx @executeautomation/database-server)",
+      "Bash(timeout 10 npx jparkerweb/mcp-sqlite)",
+      "Bash(timeout 10 npx @modelcontextprotocol/server-filesystem)",
+      "Bash(timeout 10 npx @modelcontextprotocol/server-memory)",
+      "Bash(git rm:*)"
     ],
     "deny": [],
     "ask": [],
     "additionalDirectories": [
-      "C:\\c\\Users\\adars\\PycharmProjects\\PythonProject"
+      "C:\\c\\Users\\adars\\PycharmProjects\\PythonProject",
+      "/home/adars/.local/share"
     ]
   },
   "outputStyle": "default"

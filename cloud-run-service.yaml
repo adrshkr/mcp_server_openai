@@ -1,0 +1,131 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: enhanced-ppt-generator
+  namespace: default
+  annotations:
+    run.googleapis.com/ingress: all
+    run.googleapis.com/execution-environment: gen2
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/minScale: "1"
+        autoscaling.knative.dev/maxScale: "10"
+        run.googleapis.com/cpu-throttling: "false"
+        run.googleapis.com/startup-cpu-boost: "true"
+    spec:
+      containerConcurrency: 80
+      timeoutSeconds: 300
+      containers:
+      - image: gcr.io/PROJECT_ID/enhanced-ppt-generator:latest
+        ports:
+        - containerPort: 8000
+        env:
+        - name: PRESENTON_API_URL
+          value: "https://your-presenton-service.com"
+        - name: OPENAI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: api-keys
+              key: openai-api-key
+        - name: ANTHROPIC_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: api-keys
+              key: anthropic-api-key
+        - name: GOOGLE_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: api-keys
+              key: google-api-key
+        - name: MCP_CONFIG_PATH
+          value: "/app/config"
+        - name: MCP_MONITORING_ENABLED
+          value: "true"
+        - name: MCP_COST_HOURLY_MAX
+          value: "50.0"
+        - name: MCP_COST_DAILY_MAX
+          value: "500.0"
+        resources:
+          limits:
+            cpu: "2"
+            memory: "4Gi"
+          requests:
+            cpu: "500m"
+            memory: "1Gi"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+        volumeMounts:
+        - name: config-volume
+          mountPath: /app/config
+          readOnly: true
+      volumes:
+      - name: config-volume
+        configMap:
+          name: enhanced-ppt-config
+---
+# ConfigMap for configuration files
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: enhanced-ppt-config
+data:
+  enhanced_ppt.yaml: |
+    enhanced_ppt:
+      presenton_api:
+        base_url: "${PRESENTON_API_URL}"
+        timeout: 60
+        max_retries: 3
+      llm_models:
+        openai:
+          default_model: "gpt-4o"
+          max_tokens: 2000
+          temperature: 0.2
+        anthropic:
+          default_model: "claude-3-5-sonnet"
+          max_tokens: 2000
+          temperature: 0.2
+        google:
+          default_model: "gemini-1.5-pro"
+          max_tokens: 2000
+          temperature: 0.2
+      templates:
+        classic:
+          description: "Timeless, academic presentations"
+          default_slides: 8
+        general:
+          description: "Versatile, business presentations"
+          default_slides: 10
+        modern:
+          description: "Creative, startup presentations"
+          default_slides: 12
+        professional:
+          description: "Corporate, pitch presentations"
+          default_slides: 15
+---
+# Secret for API keys
+apiVersion: v1
+kind: Secret
+metadata:
+  name: api-keys
+type: Opaque
+data:
+  openai-api-key: <base64-encoded-openai-key>
+  anthropic-api-key: <base64-encoded-anthropic-key>
+  google-api-key: <base64-encoded-google-key>
+

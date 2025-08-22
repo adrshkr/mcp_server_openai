@@ -1,0 +1,79 @@
+# 🚀 Unified Content Creator System - Production Dependencies
+# Core framework and server dependencies
+
+# Web framework and server
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+starlette==0.27.0
+websockets==12.0
+
+# HTTP client and async support
+httpx==0.25.2
+aiofiles==23.2.1
+asyncio-mqtt==0.16.1
+
+# Data processing and validation
+pydantic==2.5.0
+pydantic-settings==2.1.0
+python-multipart==0.0.6
+python-dotenv==1.0.0
+
+# LLM and AI integrations
+openai==1.3.7
+anthropic==0.7.8
+google-generativeai==0.3.2
+langchain==0.0.350
+langchain-openai==0.0.2
+langchain-anthropic==0.0.2
+langchain-google-genai==0.0.3
+
+# Document generation and processing
+python-docx==1.1.0
+python-pptx==0.6.23
+reportlab==4.0.7
+weasyprint==60.2
+pypandoc==1.12
+markdown==3.5.1
+jinja2==3.1.2
+
+# Image and icon generation
+Pillow==10.1.0
+requests==2.31.0
+aiohttp==3.9.1
+
+# Database and storage
+sqlite3
+redis==5.0.1
+psycopg2-binary==2.9.9
+
+# Monitoring and logging
+prometheus-client==0.19.0
+structlog==23.2.0
+python-json-logger==2.0.7
+
+# System utilities
+psutil==5.9.6
+click==8.1.7
+rich==13.7.0
+tqdm==4.66.1
+
+# Security and validation
+cryptography==41.0.8
+bcrypt==4.1.2
+passlib==1.7.4
+
+# Development and testing (optional for production)
+# pytest==7.4.3
+# pytest-asyncio==0.21.1
+# pytest-cov==4.1.0
+# pytest-mock==3.12.0
+# black==23.11.0
+# isort==5.12.0
+# mypy==1.7.1
+# flake8==6.1.0
+
+# Additional utilities
+pyyaml==6.0.1
+toml==0.10.2
+pathlib2==2.3.7
+watchdog==3.0.0

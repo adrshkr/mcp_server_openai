@@ -1,0 +1,537 @@
+# Unified Content Creator System Configuration
+# This file configures the entire unified content creator system
+
+# System Settings
+system:
+  name: "Unified Content Creator System"
+  version: "3.0.0"
+  description: "Advanced content creation system with MCP server integration"
+  environment: "production"  # development, staging, production
+  debug: false
+  log_level: "INFO"  # DEBUG, INFO, WARNING, ERROR
+
+# MCP Server Integration
+mcp_servers:
+  sequential_thinking:
+    url: "http://localhost:3001"
+    enabled: true
+    timeout: 60
+    retry_attempts: 3
+    health_check: true
+    description: "AI-powered content planning and structuring"
+    
+  brave_search:
+    url: "http://localhost:3002"
+    enabled: true
+    timeout: 30
+    max_results: 10
+    safe_search: true
+    region: "US"
+    description: "Web search and content research capabilities"
+    
+  memory:
+    url: "http://localhost:3003"
+    enabled: true
+    timeout: 30
+    max_context_size: "10MB"
+    retention_days: 30
+    description: "Content storage and retrieval system"
+    
+  filesystem:
+    url: "http://localhost:3004"
+    enabled: true
+    timeout: 30
+    base_path: "./output"
+    max_file_size: "100MB"
+    description: "File operations and management"
+    
+  image_generation:
+    url: "http://localhost:3005"
+    enabled: true
+    timeout: 60
+    max_images_per_request: 10
+    supported_formats: ["jpeg", "png", "webp", "svg"]
+    description: "Multi-provider image generation"
+    
+  icon_generation:
+    url: "http://localhost:3006"
+    enabled: true
+    timeout: 45
+    max_icons_per_request: 5
+    supported_formats: ["svg", "png", "ico", "webp"]
+    description: "Multi-provider icon generation"
+
+# Content Generation Settings
+content_generation:
+  # Planning and Research
+  planning:
+    max_outline_sections: 20
+    min_section_length: 50
+    max_section_length: 1000
+    research_depth: "comprehensive"  # basic, moderate, comprehensive
+  
+  # Content Enhancement
+  enhancement:
+    auto_image_generation: true
+    auto_icon_generation: true
+    content_analysis: true
+    theme_detection: true
+    language_detection: true
+  
+  # Quality Control
+  quality:
+    min_content_length: 100
+    max_content_length: 10000
+    plagiarism_check: false
+    fact_verification: true
+    grammar_check: true
+
+# Output Format Configuration
+output_formats:
+  presentation:
+    enabled: true
+    formats: ["pptx", "pdf"]
+    default_format: "pptx"
+    max_slides: 50
+    templates: ["professional", "creative", "academic", "startup"]
+    
+  document:
+    enabled: true
+    formats: ["docx", "pdf", "html", "markdown", "latex", "rtf"]
+    default_format: "docx"
+    max_pages: 100
+    templates: ["business", "academic", "technical", "creative"]
+    
+  html:
+    enabled: true
+    frameworks: ["tailwind", "bootstrap", "custom"]
+    responsive: true
+    seo_optimized: true
+    accessibility: true
+    
+  pdf:
+    enabled: true
+    engines: ["weasyprint", "reportlab", "pandoc"]
+    default_engine: "weasyprint"
+    quality: "high"
+    compression: true
+
+# Image Generation Configuration
+image_generation:
+  providers:
+    unsplash:
+      enabled: true
+      api_key: "${UNSPLASH_API_KEY}"
+      max_results: 10
+      quality: "high"
+      
+    stable_diffusion:
+      enabled: true
+      api_key: "${STABLE_DIFFUSION_API_KEY}"
+      model: "stable-diffusion-v1-5"
+      max_results: 5
+      
+    pixabay:
+      enabled: true
+      api_key: "${PIXABAY_API_KEY}"
+      max_results: 10
+      safe_search: true
+  
+  # Content Analysis Settings
+  content_analysis:
+    enabled: true
+    theme_detection: true
+    keyword_extraction: true
+    sentiment_analysis: false
+    
+    # Theme Keywords
+    themes:
+      business:
+        keywords: ["business", "finance", "corporate", "management", "strategy", "market"]
+        image_style: "professional"
+        icon_style: "flat"
+      
+      technology:
+        keywords: ["technology", "digital", "software", "hardware", "innovation", "automation"]
+        image_style: "modern"
+        icon_style: "3d"
+      
+      creative:
+        keywords: ["creative", "art", "design", "innovation", "imagination", "expression"]
+        image_style: "creative"
+        icon_style: "outline"
+      
+      educational:
+        keywords: ["education", "learning", "training", "knowledge", "development", "growth"]
+        image_style: "clean"
+        icon_style: "flat"
+
+# Icon Generation Configuration
+icon_generation:
+  providers:
+    iconify:
+      enabled: true
+      base_url: "https://api.iconify.design"
+      collections: ["mdi", "fa", "bi", "ri", "ph"]
+      max_results: 20
+      
+    lucide:
+      enabled: true
+      base_url: "https://lucide.dev/api/icons"
+      max_results: 15
+      
+    custom_ai:
+      enabled: true
+      api_key: "${CUSTOM_AI_API_KEY}"
+      max_results: 10
+  
+  # Icon Styles
+  styles:
+    flat: true
+    outline: true
+    filled: true
+    duotone: true
+    gradient: true
+
+# Document Generation Configuration
+document_generation:
+  # Pandoc Settings
+  pandoc:
+    enabled: true
+    executable: "pandoc"
+    timeout: 120
+    supported_formats: ["docx", "pdf", "html", "markdown", "latex", "rtf"]
+    
+    # LaTeX Templates
+    latex_templates:
+      business: "templates/latex/business.tex"
+      academic: "templates/latex/academic.tex"
+      technical: "templates/latex/technical.tex"
+  
+  # WeasyPrint Settings
+  weasyprint:
+    enabled: true
+    timeout: 60
+    supported_formats: ["pdf"]
+    css_frameworks: ["tailwind", "bootstrap", "custom"]
+    
+  # ReportLab Settings
+  reportlab:
+    enabled: true
+    timeout: 60
+    supported_formats: ["pdf"]
+    default_font: "Helvetica"
+    default_font_size: 12
+
+# Research Integration Configuration
+research_integration:
+  enabled: true
+  default_depth: "moderate"  # basic, moderate, comprehensive
+  max_results: 10
+  cache_ttl: 3600  # 1 hour
+  
+  # Research Patterns
+  patterns:
+    presentation:
+      keywords: ["trends", "statistics", "case studies", "best practices", "industry insights"]
+      content_types: ["article", "news", "academic", "government"]
+      min_credibility: 0.7
+      
+    document:
+      keywords: ["research", "analysis", "data", "reports", "studies"]
+      content_types: ["academic", "government", "article", "report"]
+      min_credibility: 0.8
+      
+    webpage:
+      keywords: ["seo", "user experience", "design", "conversion", "analytics"]
+      content_types: ["article", "blog", "news", "case study"]
+      min_credibility: 0.6
+      
+    report:
+      keywords: ["market analysis", "industry trends", "competitive analysis", "forecasts"]
+      content_types: ["report", "academic", "government", "article"]
+      min_credibility: 0.8
+  
+  # Source Filtering
+  filtering:
+    min_relevance: 0.6
+    min_credibility: 0.5
+    max_age_days: 365
+    exclude_domains: ["spam.com", "fake-news.com"]
+    include_domains: []
+
+# Content Validation Configuration
+content_validation:
+  enabled: true
+  
+  # Validation Rules
+  rules:
+    readability:
+      enabled: true
+      threshold: 0.7
+      severity: "warning"
+      target_audience: "Grade 8-10"
+      
+    completeness:
+      enabled: true
+      threshold: 0.9
+      severity: "critical"
+      
+    accuracy:
+      enabled: true
+      threshold: 0.95
+      severity: "critical"
+      
+    engagement:
+      enabled: true
+      threshold: 0.8
+      severity: "warning"
+      
+    accessibility:
+      enabled: true
+      threshold: 0.8
+      severity: "warning"
+      standard: "WCAG 2.1 AA"
+      
+    seo:
+      enabled: true
+      threshold: 0.7
+      severity: "info"
+      
+    structure:
+      enabled: true
+      threshold: 0.8
+      severity: "warning"
+      
+    visual_elements:
+      enabled: true
+      threshold: 0.7
+      severity: "info"
+  
+  # Content Metrics
+  metrics:
+    word_count: true
+    sentence_count: true
+    paragraph_count: true
+    readability_score: true
+    keyword_density: true
+    content_structure_score: true
+    visual_element_score: true
+    accessibility_score: true
+    seo_score: true
+    overall_quality_score: true
+
+# Advanced Orchestration Configuration
+advanced_orchestration:
+  enabled: true
+  max_workflow_steps: 50
+  max_workflow_duration: 3600  # 1 hour
+  default_timeout: 300  # 5 minutes
+  max_retries: 3
+  retry_delay: 5  # seconds
+  
+  # Workflow Types
+  workflow_types:
+    action: true
+    decision: true
+    parallel: true
+    loop: true
+    condition: true
+  
+  # Execution Settings
+  execution:
+    background_processing: true
+    parallel_execution: true
+    progress_tracking: true
+    status_monitoring: true
+    execution_history: true
+  
+  # Default Workflows
+  default_workflows:
+    content_creation:
+      enabled: true
+      name: "Content Creation Workflow"
+      description: "Complete workflow for content creation with research and validation"
+      steps: 7
+      conditions: 1
+
+# API Configuration
+api:
+  # HTTP Server
+  http_server:
+    enabled: true
+    host: "0.0.0.0"
+    port: 8000
+    workers: 4
+    timeout: 300
+    
+  # WebSocket Support
+  websocket:
+    enabled: true
+    path: "/mcp/ws"
+    max_connections: 100
+    
+  # Server-Sent Events
+  sse:
+    enabled: true
+    path: "/mcp/sse"
+    max_connections: 50
+    
+  # Rate Limiting
+  rate_limiting:
+    enabled: true
+    requests_per_minute: 100
+    burst_size: 20
+    
+  # Authentication
+  authentication:
+    enabled: false
+    method: "api_key"  # api_key, oauth, jwt
+    api_key_header: "X-API-Key"
+
+# Storage Configuration
+storage:
+  # File Storage
+  files:
+    base_path: "./output"
+    max_file_size: "100MB"
+    allowed_extensions: ["pptx", "docx", "pdf", "html", "png", "jpg", "svg"]
+    compression: true
+    
+  # Database Storage
+  database:
+    type: "sqlite"  # sqlite, postgresql, mysql
+    path: "./data/unified_system.db"
+    max_connections: 10
+    
+  # Cache Storage
+  cache:
+    type: "memory"  # memory, redis
+    max_size: 1000
+    ttl: 3600  # 1 hour
+
+# Monitoring Configuration
+monitoring:
+  enabled: true
+  
+  # Health Checks
+  health_checks:
+    enabled: true
+    interval: 30  # seconds
+    timeout: 10
+    
+  # Metrics Collection
+  metrics:
+    enabled: true
+    collection_interval: 60  # seconds
+    retention_days: 30
+    
+  # Logging
+  logging:
+    level: "INFO"
+    format: "json"
+    output: "file"  # file, stdout, syslog
+    max_file_size: "100MB"
+    max_files: 10
+    
+  # Alerting
+  alerting:
+    enabled: false
+    email: false
+    slack: false
+    webhook: false
+
+# Performance Configuration
+performance:
+  # Caching
+  caching:
+    enabled: true
+    max_size: 1000
+    ttl: 3600  # 1 hour
+    eviction_policy: "lru"
+    
+  # Parallel Processing
+  parallel:
+    enabled: true
+    max_workers: 4
+    chunk_size: 10
+    
+  # Resource Management
+  resources:
+    max_memory: "2GB"
+    max_cpu_percent: 80
+    cleanup_interval: 300  # 5 minutes
+
+# Security Configuration
+security:
+  # Input Validation
+  input_validation:
+    enabled: true
+    max_input_size: "10MB"
+    sanitize_html: true
+    validate_file_types: true
+    
+  # Access Control
+  access_control:
+    enabled: false
+    allowed_origins: ["*"]
+    allowed_methods: ["GET", "POST", "PUT", "DELETE"]
+    
+  # Data Protection
+  data_protection:
+    encryption: false
+    anonymization: false
+    retention_policy: "30 days"
+
+# Deployment Configuration
+deployment:
+  # Docker
+  docker:
+    enabled: true
+    image_name: "unified-content-creator"
+    tag: "latest"
+    registry: "gcr.io/your-project"
+    
+  # Google Cloud Run
+  cloud_run:
+    enabled: true
+    service_name: "unified-content-creator"
+    region: "us-central1"
+    min_instances: 0
+    max_instances: 10
+    cpu: "1"
+    memory: "2Gi"
+    
+  # Environment Variables
+  environment:
+    NODE_ENV: "production"
+    PORT: "8000"
+    LOG_LEVEL: "INFO"
+
+# Development Configuration
+development:
+  # Debug Mode
+  debug:
+    enabled: false
+    verbose_logging: false
+    mock_services: false
+    
+  # Testing
+  testing:
+    enabled: true
+    test_timeout: 30
+    coverage_threshold: 80
+    
+  # Hot Reload
+  hot_reload:
+    enabled: false
+    watch_paths: ["src/", "config/"]
+    
+  # Development Tools
+  tools:
+    linting: true
+    formatting: true
+    type_checking: true
+    security_scanning: true
+
+

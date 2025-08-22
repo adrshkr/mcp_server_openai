@@ -1,0 +1,256 @@
+# Unified Content Creator Configuration
+# This file configures the unified content creation tool that integrates all MCP servers
+
+# MCP Server Configuration
+mcp_servers:
+  sequential_thinking:
+    url: "http://localhost:3001"
+    timeout: 60
+    retry_attempts: 3
+    health_check: true
+  
+  brave_search:
+    url: "http://localhost:3002"
+    timeout: 30
+    max_results: 10
+    safe_search: true
+    region: "US"
+  
+  memory:
+    url: "http://localhost:3003"
+    timeout: 30
+    max_context_size: "10MB"
+    retention_days: 30
+  
+  filesystem:
+    url: "http://localhost:3004"
+    timeout: 30
+    base_path: "./output"
+    max_file_size: "100MB"
+  
+  image_generation:
+    url: "http://localhost:3005"
+    timeout: 60
+    max_images_per_request: 10
+    supported_formats: ["jpeg", "png", "webp", "svg"]
+  
+  icon_generation:
+    url: "http://localhost:3006"
+    timeout: 45
+    max_icons_per_request: 5
+    supported_formats: ["svg", "png", "ico", "webp"]
+
+# Content Generation Settings
+content_generation:
+  # Planning and Research
+  planning:
+    max_outline_sections: 20
+    min_section_length: 50
+    max_section_length: 1000
+    research_depth: "comprehensive"  # basic, moderate, comprehensive
+  
+  # Content Enhancement
+  enhancement:
+    auto_image_generation: true
+    auto_icon_generation: true
+    content_analysis: true
+    theme_detection: true
+    language_detection: true
+  
+  # Quality Control
+  quality:
+    min_content_length: 100
+    max_content_length: 10000
+    plagiarism_check: false
+    fact_verification: true
+    grammar_check: true
+
+# Output Format Configuration
+output_formats:
+  presentation:
+    enabled: true
+    templates: ["professional", "creative", "modern", "classic", "minimalist"]
+    slide_layouts: ["title", "content", "image", "chart", "summary"]
+    max_slides: 50
+    image_quality: "high"
+    include_animations: true
+  
+  document:
+    enabled: true
+    templates: ["business", "academic", "creative", "technical", "simple"]
+    sections: ["title", "toc", "introduction", "content", "conclusion", "references"]
+    max_pages: 100
+    include_toc: true
+    include_page_numbers: true
+  
+  pdf:
+    enabled: true
+    quality: "high"  # low, medium, high, print
+    compression: "balanced"
+    include_bookmarks: true
+    include_metadata: true
+    security: false
+  
+  html:
+    enabled: true
+    templates: ["responsive", "modern", "classic", "minimalist", "corporate"]
+    features: ["responsive", "seo", "accessibility", "analytics"]
+    include_css: true
+    include_js: false
+    minify: true
+
+# Visual Enhancement Settings
+visual_enhancement:
+  images:
+    providers: ["stable_diffusion", "unsplash", "pixabay"]
+    fallback_strategy: "sequential"
+    quality_preference: "high"
+    size_optimization: true
+    format_optimization: true
+  
+  icons:
+    providers: ["custom_ai", "iconify", "lucide"]
+    fallback_strategy: "sequential"
+    style_preferences: ["flat", "3d", "outline", "filled", "gradient"]
+    size_standards: [16, 24, 32, 48, 64, 128]
+  
+  themes:
+    business:
+      colors: ["#2E86AB", "#A23B72", "#F18F01", "#C73E1D"]
+      fonts: ["Arial", "Helvetica", "Georgia"]
+      style: "professional"
+    
+    creative:
+      colors: ["#FF6B6B", "#4ECDC4", "#45B7D1", "#96CEB4"]
+      fonts: ["Comic Sans MS", "Papyrus", "Brush Script MT"]
+      style: "artistic"
+    
+    modern:
+      colors: ["#2C3E50", "#E74C3C", "#3498DB", "#1ABC9C"]
+      fonts: ["Roboto", "Open Sans", "Lato"]
+      style: "clean"
+    
+    classic:
+      colors: ["#8B4513", "#CD853F", "#D2691E", "#F4A460"]
+      fonts: ["Times New Roman", "Garamond", "Baskerville"]
+      style: "traditional"
+
+# Language and Localization
+localization:
+  default_language: "English"
+  supported_languages:
+    - code: "en"
+      name: "English"
+      rtl: false
+    - code: "es"
+      name: "Spanish"
+      rtl: false
+    - code: "fr"
+      name: "French"
+      rtl: false
+    - code: "de"
+      name: "German"
+      rtl: false
+    - code: "zh"
+      name: "Chinese"
+      rtl: false
+    - code: "ja"
+      name: "Japanese"
+      rtl: false
+    - code: "ar"
+      name: "Arabic"
+      rtl: true
+  
+  translation:
+    auto_translate: false
+    preserve_formatting: true
+    cultural_adaptation: true
+
+# Performance and Optimization
+performance:
+  # Caching
+  caching:
+    enabled: true
+    ttl: 3600  # 1 hour
+    max_cache_size: "1GB"
+    cache_strategy: "lru"
+  
+  # Parallel Processing
+  parallel_processing:
+    max_concurrent_requests: 5
+    max_workers: 3
+    timeout_multiplier: 1.5
+  
+  # Resource Management
+  resources:
+    max_memory_usage: "2GB"
+    max_cpu_usage: 80
+    cleanup_interval: 300  # 5 minutes
+
+# Monitoring and Logging
+monitoring:
+  # Metrics
+  metrics:
+    enabled: true
+    collection_interval: 60  # 1 minute
+    retention_days: 30
+  
+  # Logging
+  logging:
+    level: "INFO"  # DEBUG, INFO, WARNING, ERROR, CRITICAL
+    format: "json"
+    output: "file"  # file, console, both
+    max_file_size: "100MB"
+    max_files: 10
+  
+  # Health Checks
+  health_checks:
+    enabled: true
+    interval: 300  # 5 minutes
+    timeout: 30
+    retry_attempts: 3
+
+# Security and Privacy
+security:
+  # Authentication
+  authentication:
+    required: false
+    method: "api_key"  # api_key, oauth, jwt
+    api_key_header: "X-API-Key"
+  
+  # Rate Limiting
+  rate_limiting:
+    enabled: true
+    requests_per_minute: 60
+    burst_limit: 10
+  
+  # Data Privacy
+  privacy:
+    data_retention_days: 30
+    anonymize_logs: true
+    encrypt_storage: false
+
+# Client-Specific Overrides
+client_overrides:
+  default:
+    # Default settings for all clients
+    max_file_size: "50MB"
+    max_processing_time: 300
+    quality_preference: "balanced"
+  
+  premium:
+    # Premium client settings
+    max_file_size: "200MB"
+    max_processing_time: 600
+    quality_preference: "high"
+    priority_processing: true
+  
+  enterprise:
+    # Enterprise client settings
+    max_file_size: "1GB"
+    max_processing_time: 1800
+    quality_preference: "highest"
+    priority_processing: true
+    custom_templates: true
+    white_label: true
+

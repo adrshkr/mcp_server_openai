@@ -17,3 +17,6 @@ local.env
 .env
 .pytest_cache/
 output/demo_client/Digital Transformation Strateg/enhanced_presentation_1755793847.pptx
+
+# External git repositories
+ccstatusline/

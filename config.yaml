@@ -1,5 +1,5 @@
 notifications:
   enabled: true
-  command_windows: 'powershell -Command "Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.MessageBox]::Show('{message}', '{title}')"'
-  command_linux: 'notify-send "{title}" "{message}"'
-  command_darwin: 'osascript -e ''display notification "{message}" with title "{title}"'''
+  command_windows: "powershell -Command \"[System.Console]::Beep(800, 200); [System.Console]::Beep(1000, 200); [System.Console]::Beep(1200, 300)\""
+  command_linux: "echo \"{title}: {message}\" && powershell.exe -Command \"[System.Console]::Beep(800, 200); [System.Console]::Beep(1000, 200); [System.Console]::Beep(1200, 300)\""
+  command_darwin: "osascript -e 'beep 3'"

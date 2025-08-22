@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="{{language}}" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="{{description}}">
+    <meta name="keywords" content="{{keywords}}">
+    <meta name="author" content="{{author}}">
+    <title>{{title}}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Source Sans Pro', sans-serif; }
+        .academic-content { max-width: 70ch; margin: 0 auto; }
+        .academic-content h1 { font-size: 2rem; font-weight: 700; margin-bottom: 1.5rem; text-align: center; }
+        .academic-content h2 { font-size: 1.5rem; font-weight: 600; margin-bottom: 1rem; margin-top: 2rem; }
+        .academic-content h3 { font-size: 1.25rem; font-weight: 600; margin-bottom: 0.75rem; }
+        .academic-content p { margin-bottom: 1.25rem; line-height: 1.8; text-align: justify; }
+        .academic-content blockquote { border-left: 4px solid #e5e7eb; padding-left: 1rem; margin: 1.5rem 0; font-style: italic; }
+        .academic-content .citation { font-size: 0.875rem; color: #6b7280; margin-top: 0.5rem; }
+    </style>
+</head>
+<body class="bg-white text-gray-900">
+    <header class="bg-gray-900 text-white py-8">
+        <div class="max-w-4xl mx-auto px-4">
+            <h1 class="text-4xl font-bold text-center">{{title}}</h1>
+            <div class="text-center mt-4 text-gray-300">
+                <p>Author: {{author}}</p>
+                <p>Date: {{date}}</p>
+            </div>
+        </div>
+    </header>
+    
+    <main class="max-w-4xl mx-auto px-4 py-12">
+        <div class="academic-content">
+            {{content}}
+        </div>
+    </main>
+    
+    <footer class="bg-gray-100 border-t border-gray-200 mt-16">
+        <div class="max-w-4xl mx-auto px-4 py-8">
+            <p class="text-center text-gray-600">Academic Document - {{title}}</p>
+        </div>
+    </footer>
+</body>
+</html>

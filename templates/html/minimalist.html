@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="{{language}}" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="{{description}}">
+    <meta name="keywords" content="{{keywords}}">
+    <meta name="author" content="{{author}}">
+    <title>{{title}}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .minimalist-content { max-width: 60ch; margin: 0 auto; }
+        .minimalist-content h1 { font-size: 2.5rem; font-weight: 300; margin-bottom: 2rem; color: #111827; }
+        .minimalist-content h2 { font-size: 1.75rem; font-weight: 400; margin-bottom: 1.5rem; color: #374151; }
+        .minimalist-content h3 { font-size: 1.25rem; font-weight: 400; margin-bottom: 1rem; color: #4b5563; }
+        .minimalist-content p { margin-bottom: 1.5rem; line-height: 1.7; color: #6b7280; }
+    </style>
+</head>
+<body class="bg-white text-gray-900">
+    <main class="max-w-4xl mx-auto px-8 py-24">
+        <div class="minimalist-content">
+            <h1>{{title}}</h1>
+            {{content}}
+        </div>
+    </main>
+</body>
+</html>

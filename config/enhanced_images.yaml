@@ -1,0 +1,224 @@
+# Enhanced Image Generation Configuration
+# This file configures the enhanced image generation tool with multiple providers
+
+# Global Settings
+global:
+  default_provider: "auto"  # auto, stable_diffusion, unsplash, pixabay
+  fallback_strategy: "sequential"  # sequential, parallel, smart
+  cache_enabled: true
+  cache_ttl: 3600  # 1 hour
+  max_retries: 3
+  timeout: 30
+
+# Image Generation Settings
+image_generation:
+  default_style: "professional"  # professional, creative, minimalist, vintage
+  default_size: "1080x720"
+  default_count: 1
+  default_quality: "high"  # high, medium, low
+  
+  # Content Type Optimization
+  content_types:
+    ppt:
+      preferred_size: "1920x1080"
+      preferred_style: "professional"
+      image_count: 3
+    doc:
+      preferred_size: "800x600"
+      preferred_style: "clean"
+      image_count: 2
+    html:
+      preferred_size: "1200x800"
+      preferred_style: "modern"
+      image_count: 4
+    pdf:
+      preferred_size: "1000x700"
+      preferred_style: "professional"
+      image_count: 2
+
+# Provider Configuration
+providers:
+  stable_diffusion:
+    enabled: true
+    priority: 1
+    api_url: "${STABLE_DIFFUSION_API_URL}"
+    api_key: "${STABLE_DIFFUSION_API_KEY}"
+    model: "stable-diffusion-xl-1024-v1-0"
+    max_steps: 50
+    cfg_scale: 7
+    supported_sizes:
+      - "1024x1024"
+      - "1152x896"
+      - "896x1152"
+      - "1216x832"
+      - "832x1216"
+      - "1344x768"
+      - "768x1344"
+      - "1280x720"
+      - "720x1280"
+    
+  unsplash:
+    enabled: true
+    priority: 2
+    api_key: "${UNSPLASH_API_KEY}"
+    base_url: "https://api.unsplash.com"
+    max_results: 30
+    rate_limit: 50  # requests per hour
+    supported_orientations:
+      - "landscape"
+      - "portrait"
+      - "squarish"
+    
+  pixabay:
+    enabled: true
+    priority: 3
+    api_key: "${PIXABAY_API_KEY}"
+    base_url: "https://pixabay.com/api"
+    max_results: 200
+    rate_limit: 5000  # requests per hour
+    image_types:
+      - "photo"
+      - "illustration"
+      - "vector"
+
+# Icon Generation Settings
+icon_generation:
+  enabled: true
+  default_style: "flat"  # flat, 3d, outline, filled
+  default_format: "svg"  # svg, png, ico
+  default_size: "64x64"
+  
+  # Icon Categories
+  categories:
+    business:
+      styles: ["flat", "3d", "outline"]
+      keywords: ["business", "finance", "corporate", "management"]
+      default_icons: ["📊", "📈", "💼", "🏢"]
+    
+    technology:
+      styles: ["flat", "3d", "outline"]
+      keywords: ["technology", "digital", "software", "hardware"]
+      default_icons: ["💻", "🔧", "⚡", "🌐"]
+    
+    creative:
+      styles: ["flat", "3d", "outline"]
+      keywords: ["creative", "art", "design", "innovation"]
+      default_icons: ["🎨", "✨", "🌟", "💡"]
+    
+    educational:
+      styles: ["flat", "3d", "outline"]
+      keywords: ["education", "learning", "training", "knowledge"]
+      default_icons: ["📚", "🎓", "✏️", "🧠"]
+
+# Content Analysis Settings
+content_analysis:
+  enabled: true
+  theme_detection: true
+  keyword_extraction: true
+  sentiment_analysis: false  # Future enhancement
+  
+  # Theme Keywords
+  themes:
+    business:
+      keywords: ["business", "finance", "corporate", "management", "strategy", "market"]
+      image_style: "professional"
+      icon_style: "flat"
+    
+    technology:
+      keywords: ["technology", "digital", "software", "hardware", "innovation", "automation"]
+      image_style: "modern"
+      icon_style: "3d"
+    
+    creative:
+      keywords: ["creative", "art", "design", "innovation", "imagination", "expression"]
+      image_style: "creative"
+      icon_style: "outline"
+    
+    educational:
+      keywords: ["education", "learning", "training", "knowledge", "development", "growth"]
+      image_style: "clean"
+      icon_style: "flat"
+
+# Image Processing Settings
+image_processing:
+  optimization: true
+  compression: true
+  format_conversion: true
+  
+  # Output Formats
+  formats:
+    ppt:
+      preferred: "png"
+      max_size: "2MB"
+      quality: "high"
+    
+    doc:
+      preferred: "jpg"
+      max_size: "1MB"
+      quality: "medium"
+    
+    html:
+      preferred: "webp"
+      max_size: "500KB"
+      quality: "high"
+    
+    pdf:
+      preferred: "png"
+      max_size: "1MB"
+      quality: "high"
+
+# Fallback Strategy
+fallback:
+  strategy: "sequential"  # sequential, parallel, smart
+  max_attempts: 3
+  delay_between_attempts: 1  # seconds
+  
+  # Smart Fallback Rules
+  smart_rules:
+    - condition: "content_type == 'ppt'"
+      priority: ["stable_diffusion", "unsplash", "pixabay"]
+    
+    - condition: "content_type == 'doc'"
+      priority: ["unsplash", "pixabay", "stable_diffusion"]
+    
+    - condition: "content_type == 'html'"
+      priority: ["unsplash", "stable_diffusion", "pixabay"]
+    
+    - condition: "content_type == 'pdf'"
+      priority: ["unsplash", "pixabay", "stable_diffusion"]
+
+# Monitoring and Logging
+monitoring:
+  enabled: true
+  metrics_collection: true
+  performance_tracking: true
+  
+  # Metrics to Track
+  metrics:
+    - "generation_time"
+    - "success_rate"
+    - "provider_usage"
+    - "cache_hit_rate"
+    - "error_rate"
+    - "user_satisfaction"
+
+# Client-Specific Overrides
+client_overrides:
+  default:
+    image_style: "professional"
+    provider: "auto"
+    quality: "high"
+  
+  premium:
+    image_style: "creative"
+    provider: "stable_diffusion"
+    quality: "ultra_high"
+    max_retries: 5
+  
+  enterprise:
+    image_style: "custom"
+    provider: "auto"
+    quality: "high"
+    custom_prompts: true
+    brand_guidelines: true
+
