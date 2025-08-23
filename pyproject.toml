@@ -37,6 +37,7 @@
   pythonpath = ["src"]
   testpaths = ["tests"]
   asyncio_mode = "auto"
+  tdd_guard_project_root = "/mnt/c/Users/adars/PycharmProjects/PythonProject/mcp_server_openai"
 
 [build-system]
   requires = ["setuptools","wheel"]
@@ -84,6 +85,7 @@ dev = [
     "pytest-cov>=6.2.1",
     "ruff>=0.12.9",
     "types-pyyaml>=6.0.12.20250809",
+    "tdd-guard-pytest>=0.1.1",
 ]
 monitoring = [
     "claude-monitor>=3.1.0",
