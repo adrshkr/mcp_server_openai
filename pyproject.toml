@@ -5,6 +5,7 @@
   readme = "README.md"
   requires-python = ">=3.10"
   dependencies = [
+    "fastapi",
     "mcp[cli]",
     "httpx",
   "requests",
@@ -18,7 +19,7 @@
     "python-pptx",
     "starlette>=0.37",
     "uvicorn[standard]>=0.29",
-    "uvloop>=0.19.0",
+    'uvloop==0.21.0; platform_system != "Windows"',
     "Jinja2>=3.1.3",
     "websockets>=12.0",
     "slowapi>=0.1.9",
@@ -54,6 +55,10 @@ mcp_server_openai = "mcp_server_openai.__main__:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/mcp_server_openai"]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+uvloop = { version = "0.21.0", markers = "platform_system != 'Windows'" }
 
 [tool.black]
 line-length = 120
