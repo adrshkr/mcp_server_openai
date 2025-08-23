@@ -330,7 +330,7 @@ validate_configuration()
    # Using uv (recommended for faster installs)
    pip install uv
    uv sync
-   
+
    # Or using pip
    pip install -e .
    ```
@@ -339,7 +339,7 @@ validate_configuration()
    ```bash
    # Using the optimized startup script
    python scripts/utilities/startup.py
-   
+
    # Or directly with uvicorn
    uvicorn mcp_server_openai.api.http_server:app --host 0.0.0.0 --port 8080
    ```
@@ -349,7 +349,7 @@ validate_configuration()
    # Test health endpoints
    curl http://localhost:8080/health/live
    curl http://localhost:8080/status
-   
+
    # Run comprehensive tests
    python scripts/testing/test-deployment.py --url http://localhost:8080
    ```
@@ -362,7 +362,7 @@ Deploy with enterprise-grade security and monitoring:
    ```bash
    export PROJECT_ID="your-gcp-project-id"
    gcloud config set project $PROJECT_ID
-   
+
    # Enable required APIs
    gcloud services enable run.googleapis.com
    gcloud services enable secretmanager.googleapis.com
@@ -387,7 +387,7 @@ Deploy with enterprise-grade security and monitoring:
    # Build and push image
    docker build -t gcr.io/$PROJECT_ID/mcp-server-openai .
    docker push gcr.io/$PROJECT_ID/mcp-server-openai
-   
+
    # Deploy with optimized configuration
    sed "s/PROJECT_ID/$PROJECT_ID/g" cloud-run-service.yaml | \
      gcloud run services replace - --region=us-central1
@@ -403,11 +403,11 @@ Deploy with enterprise-grade security and monitoring:
 5. **Verify deployment**
    ```bash
    SERVICE_URL=$(gcloud run services describe mcp-server-openai --region=us-central1 --format="value(status.url)")
-   
+
    # Test health endpoints
    curl $SERVICE_URL/health/live
    curl $SERVICE_URL/status
-   
+
    # Run comprehensive deployment tests
    python scripts/test-deployment.py --url $SERVICE_URL --wait 10
    ```
@@ -417,7 +417,7 @@ Deploy with enterprise-grade security and monitoring:
 After successful deployment:
 
 - **📊 Health Dashboard**: `$SERVICE_URL/status`
-- **🔍 Service Info**: `$SERVICE_URL/info` 
+- **🔍 Service Info**: `$SERVICE_URL/info`
 - **📈 GCP Monitoring**: Cloud Run metrics in GCP Console
 - **💰 Cost Monitoring**: Billing dashboard with configured alerts
 - **🚨 Alerting**: Configured for >5% error rate or >90% resource usage
