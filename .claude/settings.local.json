@@ -87,13 +87,17 @@
       "Bash(timeout 60 uv run:*)",
       "Bash(/dev/null)",
       "Bash(find:*)",
-      "Bash(timeout 10 uv run mypy --config-file mypy.ini src/mcp_server_openai/__init__.py)"
+      "Bash(timeout 10 uv run mypy --config-file mypy.ini src/mcp_server_openai/__init__.py)",
+      "Bash(timeout 90 uv run pytest -v --tb=no --durations=20)",
+      "Bash(timeout:*)",
+      "Bash(.venv/bin/pip install:*)"
     ],
     "deny": [],
     "ask": [],
     "additionalDirectories": [
       "C:\\c\\Users\\adars\\PycharmProjects\\PythonProject",
-      "/home/adars/.local/share"
+      "/home/adars/.local/share",
+      "/mnt/c/Users/adars/PycharmProjects/PythonProject/second-opinion"
     ]
   },
   "outputStyle": "default"
