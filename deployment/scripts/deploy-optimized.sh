@@ -10,6 +10,10 @@ REGION="${REGION:-us-central1}"
 SERVICE_NAME="mcp-server-openai"
 IMAGE_NAME="gcr.io/${PROJECT_ID}/${SERVICE_NAME}"
 
+# Resolve important paths relative to this script
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+CLOUD_RUN_YAML="${SCRIPT_DIR}/../cloud-run/cloud-run-service.yaml"
+
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -42,6 +46,9 @@ check_prerequisites() {
         log_error "gcloud CLI is not installed"
         exit 1
     fi
+
+    # Ensure gcloud uses the provided project by default
+    gcloud config set project "$PROJECT_ID" --quiet >/dev/null
 
     # Check if Docker is running
     if ! docker info &> /dev/null; then
@@ -97,11 +104,11 @@ create_secrets() {
     )
 
     for secret in "${secrets[@]}"; do
-        if ! gcloud secrets describe "$secret" --quiet &>/dev/null; then
+        if ! gcloud secrets describe "$secret" --project="$PROJECT_ID" --quiet &>/dev/null; then
             log_warn "Secret $secret does not exist. Creating placeholder..."
-            echo "REPLACE_WITH_ACTUAL_KEY" | gcloud secrets create "$secret" --data-file=-
+            echo "REPLACE_WITH_ACTUAL_KEY" | gcloud secrets create "$secret" --project="$PROJECT_ID" --data-file=-
             log_warn "Please update secret $secret with actual value using:"
-            log_warn "  echo 'your-actual-key' | gcloud secrets versions add $secret --data-file=-"
+            log_warn "  echo 'your-actual-key' | gcloud secrets versions add $secret --project=$PROJECT_ID --data-file=-"
         else
             log_info "Secret $secret already exists"
         fi
@@ -116,8 +123,9 @@ create_service_account() {
     log_info "Setting up service account..."
 
     # Create service account if it doesn't exist
-    if ! gcloud iam service-accounts describe "$sa_email" --quiet &>/dev/null; then
+    if ! gcloud iam service-accounts describe "$sa_email" --project="$PROJECT_ID" --quiet &>/dev/null; then
         gcloud iam service-accounts create "$sa_name" \
+            --project="$PROJECT_ID" \
             --display-name="MCP Server OpenAI Service Account" \
             --description="Service account for MCP Server with minimal permissions"
     fi
@@ -136,9 +144,10 @@ deploy_service() {
     log_info "Deploying to Cloud Run with optimized configuration..."
 
     # Deploy using the optimized cloud-run-service.yaml
-    sed "s/PROJECT_ID/${PROJECT_ID}/g" cloud-run-service.yaml | \
+    sed "s/PROJECT_ID/${PROJECT_ID}/g" "$CLOUD_RUN_YAML" | \
     gcloud run services replace - \
         --region="$REGION" \
+        --project="$PROJECT_ID" \
         --quiet
 
     log_info "Service deployed successfully"
@@ -146,6 +155,7 @@ deploy_service() {
     # Get the service URL
     SERVICE_URL=$(gcloud run services describe "$SERVICE_NAME" \
         --region="$REGION" \
+        --project="$PROJECT_ID" \
         --format="value(status.url)")
 
     log_info "Service URL: $SERVICE_URL"
