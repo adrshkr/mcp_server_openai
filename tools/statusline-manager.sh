@@ -28,7 +28,7 @@ except Exception as e:
     # Fallback to ccusage if available
     import subprocess
     try:
-        result = subprocess.run(['ccusage', 'daily', '--json'], 
+        result = subprocess.run(['ccusage', 'daily', '--json'],
                               capture_output=True, text=True, timeout=5)
         if result.returncode == 0:
             import json
@@ -42,7 +42,7 @@ except Exception as e:
     except:
         print('🤖 Claude Code | 💰 Enhanced status available')
 "
-    
+
     if [[ -f "src/mcp_server_openai/monitoring/inline_display.py" ]]; then
         $PYTHON_CMD -c "$python_script" 2>/dev/null || echo "🤖 Claude Code | 💰 Enhanced monitoring"
     else

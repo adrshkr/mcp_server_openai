@@ -9,7 +9,7 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse, PlainTextResponse, StreamingResponse
 from starlette.routing import Route
 
-from .health import health_checker
+from ..health import health_checker
 
 
 async def health(_: Request) -> PlainTextResponse:

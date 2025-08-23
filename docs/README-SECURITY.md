@@ -132,31 +132,31 @@ logger = logging.getLogger(__name__)
 
 class SecureConfig:
     """Secure configuration management for production deployment."""
-    
+
     @staticmethod
     def get_secret(key: str, default: Optional[str] = None) -> Optional[str]:
         """
         Get secret value with proper error handling.
-        
+
         Args:
             key: Environment variable name
             default: Default value if not found
-            
+
         Returns:
             Secret value or None if not found and no default
         """
         value = os.getenv(key, default)
-        
+
         if not value:
             logger.warning(f"Secret {key} not found")
             return None
-            
+
         if value in ["COMPROMISED_KEY_REPLACED", "your_api_key_here"]:
             logger.error(f"Secret {key} contains placeholder value")
             raise ValueError(f"Invalid API key for {key}")
-            
+
         return value
-    
+
     @staticmethod
     def validate_required_secrets() -> bool:
         """Validate that all required secrets are properly configured."""
@@ -164,16 +164,16 @@ class SecureConfig:
             "OPENAI_API_KEY",
             "ANTHROPIC_API_KEY"
         ]
-        
+
         missing = []
         for key in required_keys:
             if not SecureConfig.get_secret(key):
                 missing.append(key)
-        
+
         if missing:
             logger.error(f"Missing required secrets: {missing}")
             return False
-            
+
         return True
 
 # Usage in your application startup
@@ -194,7 +194,7 @@ def create_app():
     """Create and configure the MCP application."""
     # Validate configuration first
     validate_configuration()
-    
+
     # Rest of your app creation code...
 ```
 

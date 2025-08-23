@@ -8,18 +8,17 @@ content structuring.
 """
 
 import asyncio
-import json
+import os
 import sys
 from pathlib import Path
-import os
 
 # Add src to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from mcp_server_openai.tools.enhanced_ppt_generator import (
-    create_enhanced_presentation,
+    EnhancedPPTGenerator,
     PPTRequest,
-    EnhancedPPTGenerator
+    create_enhanced_presentation,
 )
 
 
@@ -36,7 +35,7 @@ async def demo_basic_usage():
             "Technology roadmap and implementation plan",
             "Change management and stakeholder engagement",
             "Success metrics and ROI projections",
-            "Risk mitigation and contingency planning"
+            "Risk mitigation and contingency planning",
         ],
         brief=(
             "Create a strategic presentation for our digital transformation initiative, "
@@ -47,10 +46,10 @@ async def demo_basic_usage():
         template_preference="professional",
         include_images=False,
         language="English",
-        client_id="demo_client"
+        client_id="demo_client",
     )
 
-    print(f"📋 PPT Request:")
+    print("📋 PPT Request:")
     print(f"   Brief: {request.brief}")
     print(f"   Notes: {len(request.notes)} points")
     print(f"   Target Length: {request.target_length}")
@@ -71,7 +70,7 @@ async def demo_basic_usage():
             template_preference=request.template_preference,
             include_images=request.include_images,
             language=request.language,
-            client_id=request.client_id
+            client_id=request.client_id,
         )
 
         if result.status == "success":
@@ -97,7 +96,7 @@ async def demo_content_analysis():
     print("=" * 30)
 
     generator = EnhancedPPTGenerator()
-    
+
     # Test content analysis
     request = PPTRequest(
         notes=[
@@ -105,7 +104,7 @@ async def demo_content_analysis():
             "Environmental impact assessment",
             "Green technology implementation",
             "Stakeholder engagement strategies",
-            "Long-term sustainability goals"
+            "Long-term sustainability goals",
         ],
         brief=(
             "Analyze our business practices and suggest a presentation structure "
@@ -113,13 +112,13 @@ async def demo_content_analysis():
         ),
         target_length="10 slides",
         model_type="gpt-4o",
-        client_id="analysis_client"
+        client_id="analysis_client",
     )
 
     try:
         print("🧠 Analyzing content for optimal structure...")
         api_args, input_tokens, output_tokens = await generator.preprocess_for_presenton(request)
-        
+
         print("✅ Content analysis completed!")
         print(f"   📝 Suggested prompt length: {len(api_args['prompt'])} characters")
         print(f"   📊 Recommended slides: {api_args['n_slides']}")
@@ -128,7 +127,7 @@ async def demo_content_analysis():
         print(f"   📄 Export format: {api_args['export_as']}")
         print(f"   🏷️  Draft name: {api_args['draft_name']}")
         print(f"   🧠 Token usage: {input_tokens} input, {output_tokens} output")
-        
+
     except Exception as e:
         print(f"❌ Content analysis failed: {e}")
 
@@ -140,23 +139,23 @@ async def demo_template_selection():
 
     # Test different template preferences
     templates = ["classic", "general", "modern", "professional"]
-    
+
     for template in templates:
         print(f"\n🔍 Testing '{template}' template...")
-        
+
         request = PPTRequest(
             notes=[
                 "Topic: Product Launch Strategy",
                 "Market research and competitive analysis",
                 "Product features and benefits",
                 "Marketing and go-to-market strategy",
-                "Sales projections and revenue targets"
+                "Sales projections and revenue targets",
             ],
             brief=f"Create a product launch presentation using the {template} template style.",
             target_length="6 slides",
             model_type="gpt-4o",
             template_preference=template,
-            client_id="template_client"
+            client_id="template_client",
         )
 
         try:
@@ -166,16 +165,16 @@ async def demo_template_selection():
                 target_length=request.target_length,
                 model_type=request.model_type,
                 template_preference=request.template_preference,
-                client_id=request.client_id
+                client_id=request.client_id,
             )
-            
+
             if result.status == "success":
                 print(f"   ✅ {template.title()} template successful")
                 print(f"      📊 Slides: {result.slides_count}")
                 print(f"      ⏱️  Time: {result.processing_time_ms:.2f}ms")
             else:
                 print(f"   ❌ {template.title()} template failed: {result.error}")
-                
+
         except Exception as e:
             print(f"   ❌ {template.title()} template error: {e}")
 
@@ -186,23 +185,23 @@ async def demo_multilingual_support():
     print("=" * 30)
 
     languages = ["English", "Spanish", "French"]
-    
+
     for language in languages:
         print(f"\n🔍 Testing {language} language...")
-        
+
         request = PPTRequest(
             notes=[
                 "Topic: International Market Expansion",
                 "Market entry strategy and localization",
                 "Cultural considerations and adaptation",
                 "Regulatory compliance requirements",
-                "Partnership and distribution channels"
+                "Partnership and distribution channels",
             ],
             brief=f"Create a presentation about international market expansion in {language}.",
             target_length="8 slides",
             model_type="gpt-4o",
             language=language,
-            client_id="multilingual_client"
+            client_id="multilingual_client",
         )
 
         try:
@@ -212,16 +211,16 @@ async def demo_multilingual_support():
                 target_length=request.target_length,
                 model_type=request.model_type,
                 language=request.language,
-                client_id=request.client_id
+                client_id=request.client_id,
             )
-            
+
             if result.status == "success":
                 print(f"   ✅ {language} presentation successful")
                 print(f"      📊 Slides: {result.slides_count}")
                 print(f"      🎨 Template: {result.template_used}")
             else:
                 print(f"   ❌ {language} presentation failed: {result.error}")
-                
+
         except Exception as e:
             print(f"   ❌ {language} presentation error: {e}")
 
@@ -246,7 +245,7 @@ async def demo_configuration():
         print("   Create this file to customize the enhanced PPT generator.")
 
     # Show environment variables
-    print(f"\n🔑 Environment Variables:")
+    print("\n🔑 Environment Variables:")
     print(f"   PRESENTON_API_URL: {os.getenv('PRESENTON_API_URL', 'Not set')}")
     print(f"   OPENAI_API_KEY: {'Set' if os.getenv('OPENAI_API_KEY') else 'Not set'}")
     print(f"   ANTHROPIC_API_KEY: {'Set' if os.getenv('ANTHROPIC_API_KEY') else 'Not set'}")
@@ -280,4 +279,3 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
-

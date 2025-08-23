@@ -296,7 +296,11 @@ class ReportLabDocumentGenerator:
 
             # Create custom styles
             title_style = self.ParagraphStyle(
-                "CustomTitle", parent=styles["Heading1"], fontSize=16, spaceAfter=30, alignment=1  # Center alignment
+                "CustomTitle",
+                parent=styles["Heading1"],
+                fontSize=16,
+                spaceAfter=30,
+                alignment=1,  # Center alignment
             )
 
             content_style = self.ParagraphStyle(
@@ -874,7 +878,9 @@ class EnhancedDocumentGenerator:
                 # Convert HTML to PDF
                 output_path = f"output/documents/{request.title.replace(' ', '_')}.pdf"
                 return await self.weasyprint_generator.generate_pdf(
-                    Path(html_result.file_path).read_text(), "", output_path  # Default CSS
+                    Path(html_result.file_path).read_text(),
+                    "",
+                    output_path,  # Default CSS
                 )
         except Exception as e:
             logger.warning(f"WeasyPrint PDF generation failed: {e}")

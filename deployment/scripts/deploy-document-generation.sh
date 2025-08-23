@@ -39,19 +39,19 @@ print_error() {
 # Function to check prerequisites
 check_prerequisites() {
     print_status "Checking prerequisites..."
-    
+
     # Check if gcloud is installed
     if ! command -v gcloud &> /dev/null; then
         print_error "gcloud CLI is not installed. Please install it first."
         exit 1
     fi
-    
+
     # Check if docker is installed
     if ! command -v docker &> /dev/null; then
         print_error "Docker is not installed. Please install it first."
         exit 1
     fi
-    
+
     # Check if PROJECT_ID is set
     if [ -z "$PROJECT_ID" ]; then
         PROJECT_ID=$(gcloud config get-value project 2>/dev/null)
@@ -61,79 +61,79 @@ check_prerequisites() {
         fi
         print_status "Using project: $PROJECT_ID"
     fi
-    
+
     print_success "Prerequisites check passed"
 }
 
 # Function to enable required APIs
 enable_apis() {
     print_status "Enabling required Google Cloud APIs..."
-    
+
     gcloud services enable \
         cloudbuild.googleapis.com \
         run.googleapis.com \
         secretmanager.googleapis.com \
         containerregistry.googleapis.com \
         --project="$PROJECT_ID"
-    
+
     print_success "APIs enabled successfully"
 }
 
 # Function to create service account
 create_service_account() {
     print_status "Creating service account for document generation service..."
-    
+
     # Check if service account already exists
     if gcloud iam service-accounts describe "$SERVICE_ACCOUNT" --project="$PROJECT_ID" &>/dev/null; then
         print_warning "Service account already exists, skipping creation"
         return
     fi
-    
+
     gcloud iam service-accounts create "document-generation-sa" \
         --display-name="Document Generation Service Account" \
         --description="Service account for enhanced document generation service" \
         --project="$PROJECT_ID"
-    
+
     # Grant necessary roles
     gcloud projects add-iam-policy-binding "$PROJECT_ID" \
         --member="serviceAccount:$SERVICE_ACCOUNT" \
         --role="roles/run.invoker"
-    
+
     gcloud projects add-iam-policy-binding "$PROJECT_ID" \
         --member="serviceAccount:$SERVICE_ACCOUNT" \
         --role="roles/secretmanager.secretAccessor"
-    
+
     gcloud projects add-iam-policy-binding "$PROJECT_ID" \
         --member="serviceAccount:$SERVICE_ACCOUNT" \
         --role="roles/logging.logWriter"
-    
+
     print_success "Service account created and configured"
 }
 
 # Function to build and push Docker image
 build_and_push_image() {
     print_status "Building and pushing Docker image..."
-    
+
     # Build the image
     docker build -f Dockerfile.document-generation -t "gcr.io/$PROJECT_ID/$IMAGE_NAME:latest" .
-    
+
     # Configure docker to use gcloud as a credential helper
     gcloud auth configure-docker
-    
+
     # Push the image
     docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:latest"
-    
+
     print_success "Docker image built and pushed successfully"
 }
 
 # Function to create secrets
 create_secrets() {
     print_status "Creating secrets for document generation service..."
-    
+
     # Create external API key secret (if needed)
     echo "Please enter the external API key for document generation services (or press Enter to skip):"
     read -r EXTERNAL_API_KEY
-    
+
     if [ -n "$EXTERNAL_API_KEY" ]; then
         echo "$EXTERNAL_API_KEY" | gcloud secrets create "document-generation-external-api-key" \
             --data-file=- \
@@ -141,11 +141,11 @@ create_secrets() {
             --project="$PROJECT_ID"
         print_success "External API key secret created"
     fi
-    
+
     # Create custom font API key secret (if needed)
     echo "Please enter the custom font API key (or press Enter to skip):"
     read -r CUSTOM_FONT_API_KEY
-    
+
     if [ -n "$CUSTOM_FONT_API_KEY" ]; then
         echo "$CUSTOM_FONT_API_KEY" | gcloud secrets create "document-generation-font-api-key" \
             --data-file=- \
@@ -158,16 +158,16 @@ create_secrets() {
 # Function to deploy to Cloud Run
 deploy_to_cloud_run() {
     print_status "Deploying document generation service to Cloud Run..."
-    
+
     # Update the Cloud Run YAML with the correct project ID
     sed "s/PROJECT_ID/$PROJECT_ID/g" cloudrun-document-generation.yaml > cloudrun-document-generation-deploy.yaml
-    
+
     # Deploy using kubectl (requires gcloud auth)
     gcloud container clusters get-credentials "$(gcloud container clusters list --project="$PROJECT_ID" --limit=1 --format="value(name)")" \
         --region="$REGION" \
         --project="$PROJECT_ID" || {
         print_warning "No GKE cluster found, deploying directly to Cloud Run..."
-        
+
         # Deploy directly to Cloud Run
         gcloud run deploy "$SERVICE_NAME" \
             --image="gcr.io/$PROJECT_ID/$IMAGE_NAME:latest" \
@@ -182,36 +182,36 @@ deploy_to_cloud_run() {
             --port="3007" \
             --set-env-vars="ENVIRONMENT=production,LOG_LEVEL=INFO,MAX_WORKERS=4,TEMPLATE_CACHE_SIZE=100,PANDOC_TIMEOUT=60,WEASYPRINT_TIMEOUT=30,REPORTLAB_TIMEOUT=30" \
             --service-account="$SERVICE_ACCOUNT"
-        
+
         return
     }
-    
+
     # Deploy using kubectl
     kubectl apply -f cloudrun-document-generation-deploy.yaml
-    
+
     # Wait for deployment to be ready
     kubectl wait --for=condition=ready pod -l serving.knative.dev/service="$SERVICE_NAME" --timeout=300s
-    
+
     print_success "Document generation service deployed successfully"
 }
 
 # Function to verify deployment
 verify_deployment() {
     print_status "Verifying deployment..."
-    
+
     # Get the service URL
     SERVICE_URL=$(gcloud run services describe "$SERVICE_NAME" \
         --region="$REGION" \
         --project="$PROJECT_ID" \
         --format="value(status.url)")
-    
+
     if [ -z "$SERVICE_URL" ]; then
         print_error "Could not get service URL"
         return 1
     fi
-    
+
     print_success "Service URL: $SERVICE_URL"
-    
+
     # Test the health endpoint
     print_status "Testing health endpoint..."
     if curl -f "$SERVICE_URL/health" &>/dev/null; then
@@ -219,7 +219,7 @@ verify_deployment() {
     else
         print_warning "Health check failed (service might still be starting)"
     fi
-    
+
     # Test document generation endpoint
     print_status "Testing document generation endpoint..."
     if curl -f "$SERVICE_URL/api/v1/documents/templates" &>/dev/null; then
@@ -272,7 +272,7 @@ main() {
     echo "🚀 Enhanced Document Generation Service Deployment"
     echo "=================================================="
     echo
-    
+
     check_prerequisites
     enable_apis
     create_service_account
@@ -281,10 +281,9 @@ main() {
     deploy_to_cloud_run
     verify_deployment
     display_deployment_info
-    
+
     print_success "Deployment completed successfully!"
 }
 
 # Run main function
 main "$@"
-

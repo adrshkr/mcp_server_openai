@@ -3,7 +3,7 @@
     "github": {
       "command": "npx",
       "args": [
-        "-y", 
+        "-y",
         "@modelcontextprotocol/server-github"
       ],
       "env": {
@@ -90,7 +90,7 @@
         "priority": "high"
       },
       "slack": {
-        "command": "npx", 
+        "command": "npx",
         "args": ["-y", "@modelcontextprotocol/server-slack"],
         "description": "Slack integration via ActionKit",
         "priority": "medium"
@@ -115,7 +115,7 @@
       },
       "security": {
         "description": "Security scanning and analysis",
-        "status": "custom_implementation_needed", 
+        "status": "custom_implementation_needed",
         "priority": "high"
       }
     }

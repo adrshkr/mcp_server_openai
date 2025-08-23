@@ -28,12 +28,12 @@ mypy-check:
 	@$(MAKE) -s mypy-core
 
 mypy-full:
-	@echo "--- Running full MyPy type checking (may be slow) ---"  
-	@uv run mypy src/mcp_server_openai
+	@echo "--- Running full MyPy type checking (may be slow) ---"
+	@uv run mypy --config-file config/mypy.ini src/mcp_server_openai
 
 mypy-core:
 	@echo "--- Running MyPy on core files only ---"
-	@uv run mypy src/mcp_server_openai/__init__.py src/mcp_server_openai/__main__.py src/mcp_server_openai/server.py src/mcp_server_openai/health.py src/mcp_server_openai/security.py src/mcp_server_openai/api/http_server.py
+	@uv run mypy --config-file config/mypy.ini src/mcp_server_openai/__init__.py src/mcp_server_openai/__main__.py src/mcp_server_openai/server.py src/mcp_server_openai/health.py src/mcp_server_openai/security.py src/mcp_server_openai/api/http_server.py
 
 preflight:
 	@echo "--- Running preflight checks (Black -> Ruff) ---"

@@ -225,7 +225,7 @@ class TestPresentonAPIClient:
     @pytest.mark.asyncio
     async def test_generate_presentation_success(self, api_client):
         """Test successful presentation generation."""
-        with patch("mcp_server_openai.tools.enhanced_ppt_generator.requests.post") as mock_post:
+        with patch("mcp_server_openai.tools.generators.enhanced_ppt_generator.requests.post") as mock_post:
             mock_response = MagicMock()
             mock_response.raise_for_status.return_value = None
             mock_response.json.return_value = {"presentation_id": "ppt_123", "path": "/path/to/ppt"}
@@ -240,7 +240,7 @@ class TestPresentonAPIClient:
     @pytest.mark.asyncio
     async def test_generate_presentation_error(self, api_client):
         """Test presentation generation with error."""
-        with patch("mcp_server_openai.tools.enhanced_ppt_generator.requests.post") as mock_post:
+        with patch("mcp_server_openai.tools.generators.enhanced_ppt_generator.requests.post") as mock_post:
             from requests.exceptions import RequestException
 
             mock_post.side_effect = RequestException("API Error")
@@ -253,7 +253,7 @@ class TestPresentonAPIClient:
     @pytest.mark.asyncio
     async def test_download_presentation_success(self, api_client):
         """Test successful presentation download."""
-        with patch("mcp_server_openai.tools.enhanced_ppt_generator.requests.get") as mock_get:
+        with patch("mcp_server_openai.tools.generators.enhanced_ppt_generator.requests.get") as mock_get:
             mock_response = MagicMock()
             mock_response.raise_for_status.return_value = None
             mock_response.iter_content.return_value = [b"test content"]
@@ -343,7 +343,6 @@ class TestEnhancedPPTGenerator:
             patch.object(generator.presenton_client, "generate_presentation") as mock_generate,
             patch.object(generator.presenton_client, "download_presentation") as mock_download,
         ):
-
             mock_preprocess.return_value = (
                 {
                     "prompt": "Test",
@@ -387,7 +386,7 @@ class TestCreateEnhancedPresentation:
     """Test create_enhanced_presentation function."""
 
     @pytest.mark.asyncio
-    @patch("mcp_server_openai.tools.enhanced_ppt_generator.EnhancedPPTGenerator")
+    @patch("mcp_server_openai.tools.generators.enhanced_ppt_generator.EnhancedPPTGenerator")
     async def test_create_enhanced_presentation_success(self, mock_generator_class):
         """Test successful presentation creation."""
         mock_generator = AsyncMock()
@@ -424,7 +423,7 @@ class TestCreateEnhancedPresentation:
         assert result.client_id == "test_client"
 
     @pytest.mark.asyncio
-    @patch("mcp_server_openai.tools.enhanced_ppt_generator.EnhancedPPTGenerator")
+    @patch("mcp_server_openai.tools.generators.enhanced_ppt_generator.EnhancedPPTGenerator")
     async def test_create_enhanced_presentation_error(self, mock_generator_class):
         """Test presentation creation with error."""
         mock_generator = AsyncMock()
@@ -464,11 +463,10 @@ class TestIntegration:
 
         # Mock the entire workflow
         with (
-            patch("mcp_server_openai.tools.enhanced_ppt_generator.LLMClient") as mock_llm_class,
-            patch("mcp_server_openai.tools.enhanced_ppt_generator.PresentonAPIClient") as mock_api_class,
-            patch("mcp_server_openai.tools.enhanced_ppt_generator.create_progress_tracker"),
+            patch("mcp_server_openai.tools.generators.enhanced_ppt_generator.LLMClient") as mock_llm_class,
+            patch("mcp_server_openai.tools.generators.enhanced_ppt_generator.PresentonAPIClient") as mock_api_class,
+            patch("mcp_server_openai.tools.generators.enhanced_ppt_generator.create_progress_tracker"),
         ):
-
             # Mock LLM client
             mock_llm = AsyncMock()
             mock_llm.chat_with_model.return_value = (

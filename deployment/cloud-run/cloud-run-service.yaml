@@ -18,7 +18,7 @@ spec:
         run.googleapis.com/secrets/UNSPLASH_ACCESS_KEY: "unsplash-access-key:latest"
         run.googleapis.com/secrets/UNSPLASH_SECRET_ACCESS_KEY: "unsplash-secret-key:latest"
         run.googleapis.com/secrets/PIXABAY_API_KEY: "pixabay-api-key:latest"
-        
+
         # Performance: Optimize startup and scaling
         autoscaling.knative.dev/minScale: "1"
         autoscaling.knative.dev/maxScale: "100"
@@ -57,7 +57,7 @@ spec:
           value: "true"
         - name: MCP_REFRESH_INTERVAL
           value: "30.0"
-        
+
         resources:
           limits:
             cpu: "2"
@@ -65,7 +65,7 @@ spec:
           requests:
             cpu: "1"
             memory: "512Mi"
-        
+
         # Comprehensive health checks for Cloud Run
         startupProbe:
           httpGet:
@@ -75,7 +75,7 @@ spec:
           timeoutSeconds: 10
           periodSeconds: 10
           failureThreshold: 3
-        
+
         livenessProbe:
           httpGet:
             path: /health/live
@@ -84,7 +84,7 @@ spec:
           timeoutSeconds: 5
           periodSeconds: 30
           failureThreshold: 3
-        
+
         readinessProbe:
           httpGet:
             path: /health/ready
@@ -114,7 +114,7 @@ data:
       name: "mcp_server_openai"
       version: "0.2.0"
       description: "OpenAI MCP Server with comprehensive tooling"
-    
+
     # LLM Provider Configuration
     llm_models:
       openai:
@@ -132,14 +132,14 @@ data:
         max_tokens: 4000
         temperature: 0.1
         timeout: 60
-    
+
     # API Configuration
     api:
       max_concurrent_requests: 10
       request_timeout: 300
       retry_attempts: 3
       retry_delay: 1.0
-    
+
     # Content Generation Settings
     content:
       max_sections: 20
@@ -148,14 +148,14 @@ data:
       max_images_per_section: 3
       enable_image_generation: true
       enable_web_research: true
-    
+
     # Security Settings
     security:
       validate_api_keys: true
       secure_headers: true
       cors_origins: ["https://your-domain.com"]
       rate_limiting: true
-    
+
     # Monitoring Configuration
     monitoring:
       enabled: true
@@ -173,4 +173,3 @@ data:
   openai-api-key: <base64-encoded-openai-key>
   anthropic-api-key: <base64-encoded-anthropic-key>
   google-api-key: <base64-encoded-google-key>
-

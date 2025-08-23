@@ -97,7 +97,9 @@
       "Bash(.venv/bin/python:*)",
       "mcp__voice-mode__converse",
       "Bash(mv:*)",
-      "Bash(sed:*)"
+      "Bash(sed:*)",
+      "Bash(gh auth:*)",
+      "Bash(gh auth:*)"
     ],
     "deny": [],
     "ask": [],

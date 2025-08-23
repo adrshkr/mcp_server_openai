@@ -87,27 +87,27 @@ data:
   DEFAULT_LANGUAGE: "en"
   DEFAULT_FONT_SIZE: "12"
   DEFAULT_LINE_SPACING: "1.5"
-  
+
   # Pandoc settings
   PANDOC_TIMEOUT: "60"
   PANDOC_MAX_MEMORY: "2G"
-  
+
   # WeasyPrint settings
   WEASYPRINT_TIMEOUT: "30"
   WEASYPRINT_MAX_WORKERS: "4"
-  
+
   # ReportLab settings
   REPORTLAB_TIMEOUT: "30"
   REPORTLAB_DEFAULT_FONT: "Helvetica"
-  
+
   # HTML generation settings
   HTML_TEMPLATE_CACHE_SIZE: "100"
   HTML_DEFAULT_CSS_FRAMEWORK: "tailwind"
-  
+
   # Output settings
   MAX_FILE_SIZE: "50MB"
   ALLOWED_FORMATS: "docx,pdf,html,md,tex,rtf"
-  
+
   # Security settings
   ALLOW_CUSTOM_CSS: "true"
   ALLOW_EXTERNAL_FONTS: "true"
@@ -148,7 +148,7 @@ data:
         </main>
     </body>
     </html>
-  
+
   # Academic template
   academic.html: |
     <!DOCTYPE html>
@@ -172,4 +172,3 @@ data:
         </main>
     </body>
     </html>
-

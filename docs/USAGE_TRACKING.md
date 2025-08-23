@@ -65,7 +65,7 @@ Add this to your `~/.claude/settings.json` or `~/.config/claude/settings.json`:
 ```json
 {
   "statusLine": {
-    "type": "command", 
+    "type": "command",
     "command": "python -m mcp_server_openai.cli monitor statusline",
     "padding": 0
   }
