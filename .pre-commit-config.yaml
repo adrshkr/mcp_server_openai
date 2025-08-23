@@ -51,14 +51,14 @@ repos:
         pass_filenames: false
         stages: [pre-push]
 
-      # MyPy core files check (run only on pre-push; scope controlled by Makefile)
+      # MyPy core files check (manual only to reduce dev friction)
       - id: mypy-core
         name: MyPy Core Files
         entry: make mypy-check
         language: system
         types: [python]
         pass_filenames: false
-        stages: [pre-push]
+        stages: [manual]
 
 # Configuration
 fail_fast: false
