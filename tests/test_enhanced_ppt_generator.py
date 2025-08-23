@@ -10,7 +10,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from mcp_server_openai.tools.enhanced_ppt_generator import (
+from mcp_server_openai.tools.generators.enhanced_ppt_generator import (
     EnhancedPPTGenerator,
     LLMClient,
     PPTRequest,

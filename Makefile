@@ -33,11 +33,11 @@ mypy-full:
 
 mypy-core:
 	@echo "--- Running MyPy on core files only ---"
-	@uv run mypy src/mcp_server_openai/__init__.py src/mcp_server_openai/__main__.py src/mcp_server_openai/server.py src/mcp_server_openai/health.py src/mcp_server_openai/security.py src/mcp_server_openai/http_server.py
+	@uv run mypy src/mcp_server_openai/__init__.py src/mcp_server_openai/__main__.py src/mcp_server_openai/server.py src/mcp_server_openai/health.py src/mcp_server_openai/security.py src/mcp_server_openai/api/http_server.py
 
 preflight:
 	@echo "--- Running preflight checks (Black -> Ruff) ---"
-	@uv run python scripts/preflight.py
+	@uv run python scripts/utilities/preflight.py
 
 fmt:
 	@echo "--- Formatting with Black ---"
@@ -68,7 +68,7 @@ run:
 
 run-http:
 	@echo "--- Starting enhanced HTTP server ---"
-	@uv run uvicorn mcp_server_openai.streaming_http:app --host 0.0.0.0 --port 8000 --reload
+	@uv run uvicorn mcp_server_openai.api.streaming_http:app --host 0.0.0.0 --port 8000 --reload
 
 run-enhanced:
 	@echo "--- Starting enhanced HTTP server with optimizations ---"

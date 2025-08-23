@@ -1,8 +1,133 @@
+# Pre-commit configuration for mcp_server_openai
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
 repos:
+  # Standard pre-commit hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md]
+      - id: end-of-file-fixer
+      - id: check-yaml
+        args: [--unsafe]  # Allow custom YAML tags
+      - id: check-added-large-files
+        args: [--maxkb=1000]
+      - id: check-case-conflict
+      - id: check-merge-conflict
+      - id: check-json
+      - id: check-toml
+      - id: mixed-line-ending
+        args: [--fix=lf]
+      - id: debug-statements
+      - id: check-executables-have-shebangs
+      - id: check-shebang-scripts-are-executable
+
+  # Python code formatting with Black
+  - repo: https://github.com/psf/black
+    rev: 25.1.0
+    hooks:
+      - id: black
+        language_version: python3.12
+        args: [--line-length=120, --target-version=py312]
+
+  # Python linting and formatting with Ruff
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.12.9
+    hooks:
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+      - id: ruff-format
+        args: [--line-length=120]
+
+  # Type checking with mypy
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.17.1
+    hooks:
+      - id: mypy
+        additional_dependencies: [types-requests, types-pyyaml]
+        args: [--config-file=config/mypy.ini, --show-error-codes]
+        files: ^src/mcp_server_openai/(server|health|security|__init__|__main__)\.py$
+
+  # Security checks
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.8.0
+    hooks:
+      - id: bandit
+        args: [-r, src/mcp_server_openai, -f, json]
+        exclude: tests/
+
+  # Python import sorting
+  - repo: https://github.com/pycqa/isort
+    rev: 5.14.4
+    hooks:
+      - id: isort
+        args: [--profile=black, --line-length=120, --multi-line=3]
+
+  # Dockerfile linting
+  - repo: https://github.com/hadolint/hadolint
+    rev: v2.13.1-beta
+    hooks:
+      - id: hadolint-docker
+        args: [--ignore, DL3008, --ignore, DL3009, --ignore, DL3015]
+
+  # Shell script checking
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.10.0.1
+    hooks:
+      - id: shellcheck
+        args: [-x]
+
+  # Documentation checks
+  - repo: https://github.com/executablebooks/mdformat
+    rev: 0.8.0
+    hooks:
+      - id: mdformat
+        additional_dependencies:
+          - mdformat-gfm
+          - mdformat-black
+        args: [--wrap=100]
+        files: ^(README\.md|docs/.+\.md)$
+
+  # YAML formatting
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v4.0.0-alpha.8
+    hooks:
+      - id: prettier
+        types_or: [yaml, json]
+        args: [--tab-width=2]
+
+  # Local custom hooks
   - repo: local
     hooks:
-      - id: preflight
-        name: Preflight (Black -> Ruff)
-        entry: uv run python scripts/preflight.py
+      # Custom preflight script (fallback)
+      - id: preflight-custom
+        name: Custom Preflight (Black -> Ruff)
+        entry: uv run python scripts/utilities/preflight.py
         language: system
         types: [python]
+        pass_filenames: false
+        stages: [manual]  # Only run when explicitly called
+
+      # Fast test suite for pre-commit
+      - id: fast-tests
+        name: Fast Test Suite
+        entry: make test-fast
+        language: system
+        types: [python]
+        pass_filenames: false
+        stages: [push]  # Run on git push only
+
+      # Type checking for core files only (fast)
+      - id: mypy-core-fast
+        name: MyPy Core Files (Fast)
+        entry: make mypy-check
+        language: system
+        types: [python]
+        pass_filenames: false
+        files: ^src/mcp_server_openai/(server|health|security|__init__|__main__)\.py$
+
+# Configuration
+fail_fast: false  # Run all hooks even if some fail
+default_install_hook_types: [pre-commit, pre-push]
+minimum_pre_commit_version: '3.0.0'

@@ -429,7 +429,7 @@ async def test_api_endpoints() -> None:
     logger.info("🧪 Testing API Endpoints...")
     
     try:
-        from mcp_server_openai.streaming_http import routes
+        from mcp_server_openai.api.streaming_http import routes
         
         # Check if unified content endpoints are defined
         unified_endpoints = [

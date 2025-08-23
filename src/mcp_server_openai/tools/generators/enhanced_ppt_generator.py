@@ -17,8 +17,8 @@ from typing import Any
 import requests
 from dotenv import load_dotenv
 
-from ..logging_utils import get_logger, log_accept, log_exception, log_response
-from ..progress import create_progress_tracker
+from ...logging_utils import get_logger, log_accept, log_exception, log_response
+from ...progress import create_progress_tracker
 
 # Load environment variables
 load_dotenv()

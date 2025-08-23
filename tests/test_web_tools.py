@@ -1,7 +1,7 @@
 import asyncio
 import json
 
-from mcp_server_openai.tools import web_tools
+from mcp_server_openai.tools.utilities import web_tools
 
 
 class _DummyResponse:

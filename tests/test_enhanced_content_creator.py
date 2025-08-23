@@ -7,7 +7,7 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from mcp_server_openai.tools.enhanced_content_creator import (
+from mcp_server_openai.tools.generators.enhanced_content_creator import (
     ContentPlan,
     ContentRequest,
     MCPClient,

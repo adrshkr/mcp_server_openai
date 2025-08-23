@@ -34,7 +34,7 @@ def run(desc: str, cmd: list[str], cwd: Path) -> None:
     sys.exit(e.returncode)
 
 def main() -> None:
-  root = (Path(__file__).resolve().parent).parent
+  root = (Path(__file__).resolve().parent).parent.parent
 
   existing_paths = []
   for p in REQUESTED_PATHS:

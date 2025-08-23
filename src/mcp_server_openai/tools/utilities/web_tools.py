@@ -8,8 +8,8 @@ from urllib.parse import quote, urlparse, urlunparse
 
 import httpx
 
-from ..logging_utils import get_logger, log_accept, log_exception, log_response
-from ..progress import create_progress_tracker
+from ...logging_utils import get_logger, log_accept, log_exception, log_response
+from ...progress import create_progress_tracker
 
 _LOG = get_logger("mcp.tool.web.fetch_url")
 _TOOL = "web.fetch_url"

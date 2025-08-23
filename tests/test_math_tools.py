@@ -1,4 +1,4 @@
-from mcp_server_openai.tools import math_tools
+from mcp_server_openai.tools.utilities import math_tools
 
 
 def test_add_numbers() -> None:

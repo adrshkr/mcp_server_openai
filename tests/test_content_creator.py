@@ -1,6 +1,6 @@
 import os
 
-from mcp_server_openai.tools import content_creator
+from mcp_server_openai.tools.generators import content_creator
 
 
 def test_ppt_generation_basic(tmp_path):

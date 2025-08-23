@@ -10,7 +10,7 @@ __version__ = "0.1.0"
 __author__ = "Your Name"
 __email__ = "your.email@example.com"
 
-from .tools.mcp_content_validation import register as register_content_validation_tools
+from .tools.mcp_integrations.mcp_content_validation import register as register_content_validation_tools
 
 __all__ = [
     "register_content_validation_tools",

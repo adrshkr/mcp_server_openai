@@ -45,6 +45,147 @@ MCP Server OpenAI is a production-ready, enterprise-grade content creation platf
 - **Cost Optimization**: Resource limits and budget monitoring
 - **Monitoring Integration**: GCP Monitoring dashboards and alerts
 
+## 📁 Project Structure
+
+```
+mcp_server_openai/
+├── 📄 Core Files
+│   ├── README.md              # Main documentation
+│   ├── LICENSE               # MIT license
+│   ├── Makefile             # Development commands
+│   ├── pyproject.toml       # Python project configuration
+│   ├── requirements.txt     # Production dependencies
+│   └── uv.lock             # Lock file for reproducible builds
+│
+├── 🏗️ Source Code
+│   └── src/mcp_server_openai/
+│       ├── __init__.py      # Package initialization
+│       ├── __main__.py      # CLI entry point
+│       ├── main.py          # MCP server entry point
+│       ├── server.py        # Core MCP server
+│       ├── health.py        # Health check logic
+│       ├── security.py      # Security validation
+│       │
+│       ├── 🌐 API Layer
+│       │   ├── http_server.py    # HTTP server implementation
+│       │   └── streaming_http.py # Streaming endpoints
+│       │
+│       ├── 🔧 Tools (MCP Tools)
+│       │   ├── generators/       # Content generation tools
+│       │   │   ├── content_creator.py
+│       │   │   ├── enhanced_ppt_generator.py
+│       │   │   ├── enhanced_document_generator.py
+│       │   │   └── unified_content_creator.py
+│       │   │
+│       │   ├── mcp_integrations/ # MCP server integrations
+│       │   │   ├── mcp_sequential_thinking.py
+│       │   │   ├── mcp_content_validation.py
+│       │   │   └── mcp_research_integration.py
+│       │   │
+│       │   └── utilities/        # General utility tools
+│       │       ├── math_tools.py
+│       │       └── web_tools.py
+│       │
+│       ├── 📝 Prompts
+│       │   ├── templates/    # Jinja2 templates
+│       │   ├── content_create.py
+│       │   └── manager.py
+│       │
+│       ├── 📊 Monitoring
+│       │   ├── cost_limiter.py
+│       │   ├── usage_tracker.py
+│       │   └── monitoring_config.py
+│       │
+│       └── 🔐 Resources
+│           └── health.py     # Health check resources
+│
+├── ⚙️ Configuration
+│   └── config/
+│       ├── enhanced_*.yaml      # Tool configurations
+│       ├── params-*.json        # Parameter files
+│       ├── mcp-servers-config.json
+│       ├── mypy.ini            # Type checking config
+│       └── pytest.ini          # Test configuration
+│
+├── 🚀 Deployment
+│   ├── docker/                 # Container images
+│   │   ├── Dockerfile          # Main production image
+│   │   ├── Dockerfile.enhanced # Enhanced features
+│   │   └── Dockerfile.unified  # Unified system
+│   │
+│   ├── cloud-run/             # GCP Cloud Run configs
+│   │   ├── cloud-run-service.yaml
+│   │   └── config.yaml
+│   │
+│   ├── docker-compose.yml      # Local development
+│   ├── docker-compose.complete.yml
+│   │
+│   └── scripts/               # Deployment automation
+│       ├── deploy-optimized.sh
+│       ├── deploy-to-cloud-run.sh
+│       └── deploy-unified-system.sh
+│
+├── 📜 Scripts
+│   ├── demos/                 # Demo and example scripts
+│   │   ├── demo_enhanced_content.py
+│   │   └── demo_unified_content.py
+│   │
+│   ├── testing/              # Test scripts
+│   │   ├── test-deployment.py
+│   │   ├── test_complete_system.py
+│   │   └── test_unified_system.py
+│   │
+│   ├── utilities/            # System utilities
+│   │   ├── startup.py        # Optimized startup
+│   │   ├── preflight.py      # Pre-deployment checks
+│   │   └── verify_endpoints.py
+│   │
+│   └── development/          # Development tools
+│       ├── call_tool.py
+│       └── register_mcp_configs.sh
+│
+├── 🧪 Tests
+│   └── tests/
+│       ├── test_*.py           # Unit and integration tests
+│       ├── conftest.py         # Test configuration
+│       └── test_sanity.py      # Basic functionality tests
+│
+├── 📚 Documentation
+│   └── docs/
+│       ├── API_REFERENCE.md    # API documentation
+│       ├── DEPLOYMENT_GUIDE.md # Deployment instructions
+│       ├── README-SECURITY.md  # Security guidelines
+│       └── TESTING_GUIDE.md    # Testing strategies
+│
+├── 🎨 Templates
+│   └── templates/
+│       ├── html/              # HTML templates
+│       │   ├── professional.html
+│       │   └── corporate.html
+│       └── pandoc/            # Pandoc templates
+│
+├── 🔧 Tools
+│   └── tools/
+│       ├── ccstatusline/      # Status line tool
+│       ├── notify.ps1         # Windows notification
+│       └── statusline-manager.sh
+│
+├── 📊 Data & Output
+│   ├── data/                  # Runtime data
+│   │   ├── files/
+│   │   └── memory.db
+│   │
+│   ├── output/               # Generated content
+│   │   ├── documents/
+│   │   └── presentations/
+│   │
+│   ├── logs/                 # Log files
+│   │   └── mcp_server.log
+│   │
+│   ├── examples/             # Example files
+│   └── build/                # Build artifacts
+```
+
 ## 🏗️ System Architecture
 
 ```
@@ -197,10 +338,10 @@ validate_configuration()
 4. **Start the HTTP server**
    ```bash
    # Using the optimized startup script
-   python scripts/startup.py
+   python scripts/utilities/startup.py
    
    # Or directly with uvicorn
-   uvicorn mcp_server_openai.http_server:app --host 0.0.0.0 --port 8080
+   uvicorn mcp_server_openai.api.http_server:app --host 0.0.0.0 --port 8080
    ```
 
 5. **Test the server**
@@ -210,7 +351,7 @@ validate_configuration()
    curl http://localhost:8080/status
    
    # Run comprehensive tests
-   python scripts/test-deployment.py --url http://localhost:8080
+   python scripts/testing/test-deployment.py --url http://localhost:8080
    ```
 
 ### GCP Cloud Run Deployment (Production)
@@ -231,7 +372,7 @@ Deploy with enterprise-grade security and monitoring:
 2. **Deploy with automated script** ⚡
    ```bash
    # One-command deployment with validation
-   ./scripts/deploy-optimized.sh
+   ./deployment/scripts/deploy-optimized.sh
    ```
 
    **This script automatically:**

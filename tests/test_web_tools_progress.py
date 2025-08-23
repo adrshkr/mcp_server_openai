@@ -7,7 +7,7 @@ import httpx
 import pytest
 
 from mcp_server_openai.logging_utils import JsonFormatter, get_logger
-from mcp_server_openai.tools import web_tools
+from mcp_server_openai.tools.utilities import web_tools
 
 # ---------- Test doubles (no real network) ----------
 

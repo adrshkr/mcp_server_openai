@@ -28,7 +28,7 @@ def main() -> None:
     if args.http:
         import uvicorn
 
-        from mcp_server_openai.http_server import app as http_app
+        from mcp_server_openai.api.http_server import app as http_app
 
         uvicorn.run(http_app, host=args.host, port=args.port)
     else:
