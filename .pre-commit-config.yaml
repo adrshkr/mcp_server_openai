@@ -28,14 +28,7 @@ repos:
       # Ruff formatter (replaces Black)
       - id: ruff-format
 
-  # Type checking for core files only (performance optimized)
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.11.2
-    hooks:
-      - id: mypy
-        additional_dependencies: [types-requests, types-pyyaml]
-        args: [--config-file=config/mypy.ini]
-        files: ^src/mcp_server_openai/(server|health|security|__init__|__main__)\.py$
+  # (Removed) mirrors-mypy hook to avoid duplicate/commit-time type checks
 
   # Local project-specific hooks
   - repo: local
@@ -58,14 +51,14 @@ repos:
         pass_filenames: false
         stages: [pre-push]
 
-      # MyPy core files check
+      # MyPy core files check (run only on pre-push; scope controlled by Makefile)
       - id: mypy-core
         name: MyPy Core Files
         entry: make mypy-check
         language: system
         types: [python]
         pass_filenames: false
-        files: ^src/mcp_server_openai/(server|health|security|__init__|__main__)\.py$
+        stages: [pre-push]
 
 # Configuration
 fail_fast: false
