@@ -92,7 +92,8 @@ enable_apis() {
         iam.googleapis.com \
         secretmanager.googleapis.com \
         monitoring.googleapis.com \
-        logging.googleapis.com
+        logging.googleapis.com \
+        --project="$PROJECT_ID"
 
     log_success "Google Cloud APIs enabled"
 }
@@ -101,8 +102,9 @@ setup_service_account() {
     log_info "Setting up service account..."
 
     # Create service account if it doesn't exist
-    if ! gcloud iam service-accounts describe "${PROJECT_NAME}-sa@${PROJECT_ID}.iam.gserviceaccount.com" &>/dev/null; then
+    if ! gcloud iam service-accounts describe "${PROJECT_NAME}-sa@${PROJECT_ID}.iam.gserviceaccount.com" --project="$PROJECT_ID" &>/dev/null; then
         gcloud iam service-accounts create "${PROJECT_NAME}-sa" \
+            --project="$PROJECT_ID" \
             --display-name="Unified Content Creator Service Account"
     fi
 
@@ -128,11 +130,11 @@ setup_secrets() {
     # Create secrets for API keys
     for secret in OPENAI_API_KEY ANTHROPIC_API_KEY GOOGLE_API_KEY PRESENTON_API_KEY UNSPLASH_API_KEY STABLE_DIFFUSION_API_KEY PIXABAY_API_KEY BRAVE_SEARCH_API_KEY; do
         if [ ! -z "${!secret}" ]; then
-            if ! gcloud secrets describe "$secret" &>/dev/null; then
-                echo "${!secret}" | gcloud secrets create "$secret" --data-file=-
+            if ! gcloud secrets describe "$secret" --project="$PROJECT_ID" &>/dev/null; then
+                echo "${!secret}" | gcloud secrets create "$secret" --data-file=- --project="$PROJECT_ID"
                 log_info "Created secret: $secret"
             else
-                echo "${!secret}" | gcloud secrets versions add "$secret" --data-file=-
+                echo "${!secret}" | gcloud secrets versions add "$secret" --data-file=- --project="$PROJECT_ID"
                 log_info "Updated secret: $secret"
             fi
         fi
@@ -167,6 +169,7 @@ deploy_to_cloud_run() {
         --image gcr.io/${PROJECT_ID}/${PROJECT_NAME}:latest \
         --platform managed \
         --region ${REGION} \
+        --project ${PROJECT_ID} \
         --allow-unauthenticated \
         --service-account="${PROJECT_NAME}-sa@${PROJECT_ID}.iam.gserviceaccount.com" \
         --memory 2Gi \
@@ -183,6 +186,7 @@ deploy_to_cloud_run() {
                 --image gcr.io/${PROJECT_ID}/mcp-${server}:latest \
                 --platform managed \
                 --region ${REGION} \
+                --project ${PROJECT_ID} \
                 --allow-unauthenticated \
                 --service-account="${PROJECT_NAME}-sa@${PROJECT_ID}.iam.gserviceaccount.com" \
                 --memory 1Gi \
@@ -339,12 +343,12 @@ show_deployment_info() {
     log_info "Deployment completed successfully!"
     echo
     echo "🌐 Service URLs:"
-    echo "  Main System: https://${PROJECT_NAME}-$(gcloud run services describe ${PROJECT_NAME} --region=${REGION} --format='value(status.url)' | sed 's|https://||')"
+    echo "  Main System: https://${PROJECT_NAME}-$(gcloud run services describe ${PROJECT_NAME} --region=${REGION} --project=${PROJECT_ID} --format='value(status.url)' | sed 's|https://||')"
     echo
     echo "🔧 MCP Servers:"
     for server in sequential-thinking brave-search memory filesystem research-integration content-validation advanced-orchestration; do
-        if gcloud run services describe mcp-${server} --region=${REGION} &>/dev/null; then
-            echo "  ${server}: https://mcp-${server}-$(gcloud run services describe mcp-${server} --region=${REGION} --format='value(status.url)' | sed 's|https://||')"
+        if gcloud run services describe mcp-${server} --region=${REGION} --project=${PROJECT_ID} &>/dev/null; then
+            echo "  ${server}: https://mcp-${server}-$(gcloud run services describe mcp-${server} --region=${REGION} --project=${PROJECT_ID} --format='value(status.url)' | sed 's|https://||')"
         fi
     done
     echo

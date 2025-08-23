@@ -62,6 +62,9 @@ check_prerequisites() {
         print_status "Using project: $PROJECT_ID"
     fi
 
+    # Ensure gcloud uses the provided project by default
+    gcloud config set project "$PROJECT_ID" --quiet >/dev/null
+
     print_success "Prerequisites check passed"
 }
 
@@ -118,7 +121,7 @@ build_and_push_image() {
     docker build -f Dockerfile.document-generation -t "gcr.io/$PROJECT_ID/$IMAGE_NAME:latest" .
 
     # Configure docker to use gcloud as a credential helper
-    gcloud auth configure-docker
+    gcloud auth configure-docker --quiet
 
     # Push the image
     docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:latest"

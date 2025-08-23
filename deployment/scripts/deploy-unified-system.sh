@@ -71,6 +71,9 @@ check_prerequisites() {
         print_status "Using project: $PROJECT_ID"
     fi
 
+    # Ensure gcloud uses the provided project by default
+    gcloud config set project "$PROJECT_ID" --quiet >/dev/null
+
     print_success "Prerequisites check passed"
 }
 

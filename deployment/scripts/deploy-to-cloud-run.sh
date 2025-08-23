@@ -66,12 +66,12 @@ setup_project() {
     print_status "Setting up Google Cloud project..."
 
     # Set the project
-    gcloud config set project "${PROJECT_ID}"
+    gcloud config set project "${PROJECT_ID}" --quiet
 
     # Enable required APIs
-    gcloud services enable run.googleapis.com
-    gcloud services enable cloudbuild.googleapis.com
-    gcloud services enable containerregistry.googleapis.com
+    gcloud services enable run.googleapis.com --project="$PROJECT_ID"
+    gcloud services enable cloudbuild.googleapis.com --project="$PROJECT_ID"
+    gcloud services enable containerregistry.googleapis.com --project="$PROJECT_ID"
 
     print_success "Project setup completed"
 }
@@ -85,7 +85,7 @@ build_and_push_image() {
     docker build -f "${DOCKERFILE}" -t "${IMAGE_NAME}" .
 
     # Configure Docker to use gcloud as a credential helper
-    gcloud auth configure-docker
+    gcloud auth configure-docker --quiet
 
     # Push the image
     print_status "Pushing Docker image to Google Container Registry..."
@@ -122,19 +122,19 @@ setup_secrets() {
     print_status "Setting up API key secrets..."
 
     # Check if secrets exist
-    if ! gcloud secrets list --filter="name:openai-api-key" --format="value(name)" | grep -q .; then
+    if ! gcloud secrets list --filter="name:openai-api-key" --project="$PROJECT_ID" --format="value(name)" | grep -q .; then
         print_warning "OpenAI API key secret not found. Creating..."
-        echo "${OPENAI_API_KEY}" | gcloud secrets create openai-api-key --data-file=-
+        echo "${OPENAI_API_KEY}" | gcloud secrets create openai-api-key --data-file=- --project="$PROJECT_ID"
     fi
 
-    if ! gcloud secrets list --filter="name:anthropic-api-key" --format="value(name)" | grep -q .; then
+    if ! gcloud secrets list --filter="name:anthropic-api-key" --project="$PROJECT_ID" --format="value(name)" | grep -q .; then
         print_warning "Anthropic API key secret not found. Creating..."
-        echo "${ANTHROPIC_API_KEY}" | gcloud secrets create anthropic-api-key --data-file=-
+        echo "${ANTHROPIC_API_KEY}" | gcloud secrets create anthropic-api-key --data-file=- --project="$PROJECT_ID"
     fi
 
-    if ! gcloud secrets list --filter="name:google-api-key" --format="value(name)" | grep -q .; then
+    if ! gcloud secrets list --filter="name:google-api-key" --project="$PROJECT_ID" --format="value(name)" | grep -q .; then
         print_warning "Google API key secret not found. Creating..."
-        echo "${GOOGLE_API_KEY}" | gcloud secrets create google-api-key --data-file=-
+        echo "${GOOGLE_API_KEY}" | gcloud secrets create google-api-key --data-file=- --project="$PROJECT_ID"
     fi
 
     print_success "API key secrets setup completed"
@@ -146,6 +146,7 @@ update_service_with_secrets() {
 
     gcloud run services update "${SERVICE_NAME}" \
         --region "${REGION}" \
+        --project "${PROJECT_ID}" \
         --update-secrets OPENAI_API_KEY=openai-api-key:latest \
         --update-secrets ANTHROPIC_API_KEY=anthropic-api-key:latest \
         --update-secrets GOOGLE_API_KEY=google-api-key:latest
@@ -157,7 +158,7 @@ update_service_with_secrets() {
 show_deployment_info() {
     print_status "Getting deployment information..."
 
-    SERVICE_URL=$(gcloud run services describe "${SERVICE_NAME}" --region "${REGION}" --format="value(status.url)")
+    SERVICE_URL=$(gcloud run services describe "${SERVICE_NAME}" --region "${REGION}" --project "${PROJECT_ID}" --format="value(status.url)")
 
     echo ""
     print_success "Deployment completed successfully!"
@@ -216,7 +217,7 @@ main() {
     deploy_to_cloud_run
 
     # Update service with secrets if they exist
-    if gcloud secrets list --filter="name:openai-api-key" --format="value(name)" | grep -q .; then
+    if gcloud secrets list --filter="name:openai-api-key" --project="$PROJECT_ID" --format="value(name)" | grep -q .; then
         update_service_with_secrets
     fi
 

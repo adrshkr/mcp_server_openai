@@ -71,7 +71,7 @@ setup_project() {
     fi
 
     # Set the project
-    gcloud config set project "$PROJECT_ID"
+    gcloud config set project "$PROJECT_ID" --quiet
 
     # Enable required APIs
     print_status "Enabling required APIs..."
@@ -92,7 +92,7 @@ create_service_account() {
     print_status "Creating service account..."
 
     # Check if service account already exists
-    if gcloud iam service-accounts describe "$SERVICE_ACCOUNT" &> /dev/null; then
+    if gcloud iam service-accounts describe "$SERVICE_ACCOUNT" --project "$PROJECT_ID" &> /dev/null; then
         print_warning "Service account already exists, skipping creation."
         return
     fi
@@ -142,11 +142,11 @@ create_secrets() {
             print_status "Creating secret: $secret"
 
             # Check if secret already exists
-            if gcloud secrets describe "$secret" &> /dev/null; then
+            if gcloud secrets describe "$secret" --project "$PROJECT_ID" &> /dev/null; then
                 print_warning "Secret $secret already exists, updating..."
-                echo "${!secret}" | gcloud secrets versions add "$secret" --data-file=-
+                echo "${!secret}" | gcloud secrets versions add "$secret" --data-file=- --project "$PROJECT_ID"
             else
-                echo "${!secret}" | gcloud secrets create "$secret" --data-file=-
+                echo "${!secret}" | gcloud secrets create "$secret" --data-file=- --project "$PROJECT_ID"
             fi
         else
             print_warning "Environment variable $secret is not set, skipping..."
@@ -342,13 +342,15 @@ setup_monitoring() {
     # Create log sink for unified content creator
     gcloud logging sinks create unified-content-sink \
         "storage.googleapis.com/projects/$PROJECT_ID/buckets/unified-content-logs" \
-        --log-filter="resource.type=\"cloud_run_revision\" AND resource.labels.service_name=\"$SERVICE_NAME\""
+        --log-filter="resource.type=\"cloud_run_revision\" AND resource.labels.service_name=\"$SERVICE_NAME\"" \
+        --project "$PROJECT_ID"
 
     # Create custom metrics
     gcloud monitoring custom create \
         --display-name="Content Creation Requests" \
         --type="custom.googleapis.com/content/creation/requests" \
-        --description="Number of content creation requests"
+        --description="Number of content creation requests" \
+        --project "$PROJECT_ID"
 
     print_success "Monitoring and logging configured!"
 }
