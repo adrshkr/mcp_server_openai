@@ -31,7 +31,10 @@ async def demo_basic_usage():
     request = ContentRequest(
         number_of_slides=5,
         brief="Digital Transformation Strategy",
-        notes="Current state assessment\nTechnology roadmap\nChange management plan\nSuccess metrics\nImplementation timeline",
+        notes=(
+            "Current state assessment\nTechnology roadmap\n"
+            "Change management plan\nSuccess metrics\nImplementation timeline"
+        ),
         style="professional",
         tone="persuasive",
         audience="executives",
@@ -165,8 +168,14 @@ async def main():
     print("🎉 Demo completed!")
     print("\nTo use the enhanced content creator:")
     print("1. Call the tool via MCP: enhanced_content.create")
-    print("2. Use the CLI script: python scripts/call_tool.py enhanced_content.create params-enhanced-content-create.json")
-    print("3. Import and use in your code: from mcp_server_openai.tools.enhanced_content_creator import create_enhanced_presentation")
+    print(
+        "2. Use the CLI script: python scripts/call_tool.py "
+        "enhanced_content.create params-enhanced-content-create.json"
+    )
+    print(
+        "3. Import and use in your code: "
+        "from mcp_server_openai.tools.enhanced_content_creator import create_enhanced_presentation"
+    )
     print("\nFor more information, see ENHANCED_CONTENT_CREATOR_README.md")
 
 

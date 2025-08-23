@@ -57,6 +57,9 @@ class UsageStats:
     # Usage patterns
     requests_count: int = 0
     session_requests: int = 0
+    messages_count: int = 0
+    session_messages: int = 0
+    message_limit: int | None = None  # Daily message limit if known
 
     # Burn rates
     burn_rate_per_hour: float = 0.0
@@ -68,6 +71,9 @@ class UsageStats:
     # Timing
     session_duration_minutes: float = 0.0
     block_time_remaining_minutes: float | None = None
+    session_start_time: float | None = None
+    five_hour_limit_minutes: float = 300.0  # 5 hours in minutes
+    time_until_five_hour_limit: float | None = None  # Minutes remaining
 
     # Status and warnings
     warnings: list[str] = field(default_factory=list)
@@ -104,11 +110,17 @@ class UsageStats:
             "session_cost": round(self.session_cost, 4),
             "requests_count": self.requests_count,
             "session_requests": self.session_requests,
+            "messages_count": self.messages_count,
+            "session_messages": self.session_messages,
+            "message_limit": self.message_limit,
             "burn_rate_per_hour": round(self.burn_rate_per_hour, 4),
             "burn_rate_per_day": round(self.burn_rate_per_day, 4),
             "model_name": self.model_name,
             "session_duration_minutes": round(self.session_duration_minutes, 1),
             "block_time_remaining_minutes": self.block_time_remaining_minutes,
+            "session_start_time": self.session_start_time,
+            "five_hour_limit_minutes": self.five_hour_limit_minutes,
+            "time_until_five_hour_limit": self.time_until_five_hour_limit,
             "avg_tokens_per_request": round(self.avg_tokens_per_request, 2),
             "avg_cost_per_request": round(self.avg_cost_per_request, 4),
             "tokens_per_dollar": round(self.tokens_per_dollar, 0),
@@ -135,7 +147,42 @@ class UsageStats:
 
         efficiency_str = " | ".join(efficiency_parts)
 
-        return f"🤖 {model_display} | 💰 {cost_display} | 🔥 {efficiency_str} | 🧠 {self.tokens.total_tokens:,}"
+        # Add message count and limits
+        message_parts = []
+        if self.messages_count > 0:
+            if self.message_limit:
+                message_parts.append(
+                    f"Msgs {self.session_messages}/{self.messages_count} (limit: {self.message_limit})"
+                )
+            else:
+                message_parts.append(f"Msgs {self.session_messages}/{self.messages_count}")
+
+        # Add time remaining for 5-hour limit
+        if self.time_until_five_hour_limit is not None:
+            hours = int(self.time_until_five_hour_limit // 60)
+            minutes = int(self.time_until_five_hour_limit % 60)
+            message_parts.append(f"Time {hours}h{minutes}m left")
+
+        # Add block time remaining if different from 5-hour limit
+        if (
+            self.block_time_remaining_minutes
+            and abs(self.block_time_remaining_minutes - (self.time_until_five_hour_limit or 0)) > 5
+        ):
+            hours = int(self.block_time_remaining_minutes // 60)
+            minutes = int(self.block_time_remaining_minutes % 60)
+            message_parts.append(f"Block {hours}h{minutes}m")
+
+        message_str = " | ".join(message_parts)
+
+        # Combine all parts
+        parts = [f"Claude {model_display}", f"Cost {cost_display}"]
+        if efficiency_str:
+            parts.append(f"Rate {efficiency_str}")
+        if message_str:
+            parts.append(message_str)
+        parts.append(f"Tokens {self.tokens.total_tokens:,}")
+
+        return " | ".join(parts)
 
 
 class EnhancedUsageTracker:
@@ -164,7 +211,7 @@ class EnhancedUsageTracker:
         return stats
 
     async def track_api_call(
-        self, input_tokens: int, output_tokens: int, cost: float, model: str | None = None
+        self, input_tokens: int, output_tokens: int, cost: float, model: str | None = None, message_count: int = 1
     ) -> None:
         """Track a single API call for session statistics."""
         if self._last_stats:
@@ -174,6 +221,7 @@ class EnhancedUsageTracker:
             self._last_stats.tokens.total_tokens += input_tokens + output_tokens
             self._last_stats.session_cost += cost
             self._last_stats.session_requests += 1
+            self._last_stats.session_messages += message_count
             if model:
                 self._last_stats.model_name = model
 
@@ -283,17 +331,28 @@ class EnhancedUsageTracker:
 
         session_duration = (time.time() - self._session_start) / 60.0  # minutes
 
+        # Calculate 5-hour limit timing
+        five_hour_limit_minutes = 300.0  # 5 hours
+        session_start_time = self._session_start
+        time_until_five_hour_limit = max(0, five_hour_limit_minutes - session_duration)
+
         return UsageStats(
             tokens=tokens,
             cost_usd=data.get("total_cost", 0.0),
             session_cost=data.get("session_cost", 0.0),
             requests_count=data.get("total_requests", 0),
             session_requests=data.get("session_requests", 0),
+            messages_count=data.get("total_messages", data.get("total_requests", 0)),  # Fallback to requests
+            session_messages=data.get("session_messages", data.get("session_requests", 0)),  # Fallback to requests
+            message_limit=data.get("message_limit"),
             burn_rate_per_hour=data.get("hourly_burn_rate", 0.0),
             burn_rate_per_day=data.get("daily_burn_rate", 0.0),
             model_name=data.get("model", "Claude"),
             session_duration_minutes=session_duration,
             block_time_remaining_minutes=data.get("block_time_remaining_minutes"),
+            session_start_time=session_start_time,
+            five_hour_limit_minutes=five_hour_limit_minutes,
+            time_until_five_hour_limit=time_until_five_hour_limit,
             warnings=data.get("warnings", []),
         )
 
@@ -307,13 +366,24 @@ class EnhancedUsageTracker:
 
         session_duration = (time.time() - self._session_start) / 60.0  # minutes
 
+        # Calculate 5-hour limit timing
+        five_hour_limit_minutes = 300.0  # 5 hours
+        session_start_time = self._session_start
+        time_until_five_hour_limit = max(0, five_hour_limit_minutes - session_duration)
+
         return UsageStats(
             tokens=tokens,
             cost_usd=data.get("total_cost", 0.0),
             requests_count=data.get("total_requests", 0),
+            messages_count=data.get("total_messages", data.get("total_requests", 0)),
+            session_messages=data.get("session_messages", 0),
+            message_limit=data.get("message_limit"),
             burn_rate_per_hour=data.get("hourly_burn_rate", 0.0),
             burn_rate_per_day=data.get("daily_burn_rate", 0.0),
             session_duration_minutes=session_duration,
+            session_start_time=session_start_time,
+            five_hour_limit_minutes=five_hour_limit_minutes,
+            time_until_five_hour_limit=time_until_five_hour_limit,
             warnings=data.get("warnings", []),
         )
 
@@ -338,17 +408,33 @@ class EnhancedUsageTracker:
         base_cost = tokens.total_tokens * 0.00001  # Rough estimate
         session_duration = (time.time() - self._session_start) / 60.0  # minutes
 
+        # Calculate 5-hour limit timing
+        five_hour_limit_minutes = 300.0  # 5 hours
+        session_start_time = self._session_start
+        time_until_five_hour_limit = max(0, five_hour_limit_minutes - session_duration)
+
+        # Generate mock message counts
+        total_messages = random.randint(20, 200)
+        session_messages = random.randint(1, min(50, total_messages))
+        message_limit = random.choice([None, 200, 500, 1000])  # Some accounts have limits
+
         return UsageStats(
             tokens=tokens,
             cost_usd=base_cost,
             session_cost=base_cost * random.uniform(0.1, 0.5),
             requests_count=random.randint(10, 100),
             session_requests=random.randint(1, 20),
+            messages_count=total_messages,
+            session_messages=session_messages,
+            message_limit=message_limit,
             burn_rate_per_hour=base_cost * random.uniform(0.5, 2.0),
             burn_rate_per_day=base_cost * random.uniform(12, 30),
             model_name=random.choice(["Claude-3.5-Sonnet", "Claude-3-Opus", "Claude-3-Haiku"]),
             session_duration_minutes=session_duration,
             block_time_remaining_minutes=random.randint(60, 300) if random.random() > 0.5 else None,
+            session_start_time=session_start_time,
+            five_hour_limit_minutes=five_hour_limit_minutes,
+            time_until_five_hour_limit=time_until_five_hour_limit,
             warnings=[] if random.random() > 0.3 else ["Mock warning: High usage detected"],
         )
 

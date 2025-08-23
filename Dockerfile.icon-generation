@@ -1,0 +1,35 @@
+# Dockerfile for MCP Icon Generation Server
+FROM python:3.11-slim
+
+# Set working directory
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application code
+COPY src/ ./src/
+COPY config/ ./config/
+
+# Create necessary directories
+RUN mkdir -p /app/output /app/logs
+
+# Set permissions
+RUN chmod +x /app/src/mcp_server_openai/tools/enhanced_icon_generator.py
+
+# Expose port
+EXPOSE 3006
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:3006/health || exit 1
+
+# Run the MCP icon generation server
+CMD ["python", "-m", "uvicorn", "src.mcp_server_openai.tools.enhanced_icon_generator:app", "--host", "0.0.0.0", "--port", "3006"]
+

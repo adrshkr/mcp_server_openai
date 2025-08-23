@@ -1,0 +1,197 @@
+# Enhanced PPT Generator Configuration
+# Configuration for Presenton API integration and LLM preprocessing
+
+enhanced_ppt:
+  # Presenton API configuration
+  presenton_api:
+    base_url: "${PRESENTON_API_URL}"
+    timeout: 60
+    max_retries: 3
+    endpoints:
+      generate: "/api/v1/ppt/presentation/generate"
+      status: "/api/v1/ppt/presentation/status"
+      download: "/api/v1/ppt/presentation/download"
+  
+  # LLM model configurations
+  llm_models:
+    openai:
+      default_model: "gpt-4o"
+      max_tokens: 2000
+      temperature: 0.2
+      timeout: 30
+      max_retries: 2
+    
+    anthropic:
+      default_model: "claude-3-5-sonnet"
+      max_tokens: 2000
+      temperature: 0.2
+      timeout: 45
+      max_retries: 2
+    
+    google:
+      default_model: "gemini-1.5-pro"
+      max_tokens: 2000
+      temperature: 0.2
+      timeout: 30
+      max_retries: 2
+  
+  # Presentation templates
+  templates:
+    classic:
+      description: "Timeless, academic presentations"
+      best_for: ["Research", "Academic", "Traditional business"]
+      characteristics: ["Clean lines", "Professional fonts", "Subtle colors"]
+      default_slides: 8
+    
+    general:
+      description: "Versatile, business presentations"
+      best_for: ["Business meetings", "General presentations", "Corporate"]
+      characteristics: ["Balanced design", "Professional appearance", "Wide compatibility"]
+      default_slides: 10
+    
+    modern:
+      description: "Creative, startup presentations"
+      best_for: ["Startups", "Creative projects", "Innovation"]
+      characteristics: ["Bold colors", "Modern fonts", "Dynamic layouts"]
+      default_slides: 12
+    
+    professional:
+      description: "Corporate, pitch presentations"
+      best_for: ["Executive presentations", "Investor pitches", "Corporate reports"]
+      characteristics: ["Sophisticated design", "High-end appearance", "Executive appeal"]
+      default_slides: 15
+  
+  # Content generation settings
+  content_generation:
+    min_slides: 5
+    max_slides: 15
+    default_language: "English"
+    supported_languages: ["English", "Spanish", "French", "German", "Chinese", "Japanese"]
+    
+    # Slide estimation rules
+    slide_estimation:
+      words_per_slide: 50
+      characters_per_slide: 200
+      short_presentation: [6, 8]
+      medium_presentation: [8, 12]
+      long_presentation: [12, 15]
+    
+    # Image handling
+    image_handling:
+      default_include_images: false
+      pixabay_integration: true
+      image_quality: "high"
+      max_images_per_slide: 2
+  
+  # Output settings
+  output:
+    # File naming
+    naming:
+      prefix: "enhanced_presentation"
+      include_timestamp: true
+      include_client: true
+      include_template: true
+    
+    # Directory structure
+    directories:
+      base: "output/presentations"
+      create_subdirectories: true
+      organize_by_client: true
+      organize_by_date: true
+    
+    # File formats
+    formats:
+      pptx: true
+      pdf: false
+      html: false
+    
+    # Quality settings
+    quality:
+      compression: "balanced"
+      image_quality: "high"
+      embed_fonts: true
+  
+  # Performance settings
+  performance:
+    # Caching
+    caching:
+      enabled: true
+      cache_size: 100
+      cache_ttl: 3600  # 1 hour
+    
+    # Parallel processing
+    parallel:
+      enabled: true
+      max_workers: 4
+      chunk_size: 10
+    
+    # Timeouts
+    timeouts:
+      llm_preprocessing: 60
+      presenton_api: 120
+      file_download: 60
+      total_operation: 300
+  
+  # Monitoring and logging
+  monitoring:
+    # Progress tracking
+    progress:
+      enabled: true
+      detailed_logging: true
+      performance_metrics: true
+    
+    # Error handling
+    error_handling:
+      log_errors: true
+      retry_failed_operations: true
+      fallback_to_basic: true
+      notify_on_failure: false
+    
+    # Usage tracking
+    usage:
+      track_api_calls: true
+      track_llm_usage: true
+      track_generation_time: true
+      track_file_sizes: true
+
+# Client-specific overrides
+clients:
+  default:
+    enhanced_ppt:
+      template_preference: "auto"
+      include_images: false
+      language: "English"
+      model_type: "gpt-4o"
+  
+  enterprise:
+    enhanced_ppt:
+      template_preference: "professional"
+      include_images: false
+      language: "English"
+      model_type: "gpt-4o"
+      max_slides: 12
+  
+  startup:
+    enhanced_ppt:
+      template_preference: "modern"
+      include_images: true
+      language: "English"
+      model_type: "gpt-4o"
+      max_slides: 10
+  
+  academic:
+    enhanced_ppt:
+      template_preference: "classic"
+      include_images: false
+      language: "English"
+      model_type: "claude-3-5-sonnet"
+      max_slides: 15
+  
+  international:
+    enhanced_ppt:
+      template_preference: "general"
+      include_images: false
+      language: "auto"
+      model_type: "gpt-4o"
+      supported_languages: ["English", "Spanish", "French", "German", "Chinese", "Japanese"]
+
