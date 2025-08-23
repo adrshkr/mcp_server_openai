@@ -550,29 +550,90 @@ Complex workflow management:
 
 ## 🧪 Testing
 
+### Test Strategy & CI Optimization
+
+The project uses a **fast/comprehensive test separation strategy** optimized for development speed and CI efficiency:
+
+#### Fast Tests (Development & CI)
+```bash
+# Fast test suite (26s) - optimized for development
+make test-fast
+# OR
+pytest -q --maxfail=1 --durations=10 -m "not slow and not integration and not e2e and not network"
+```
+
+**Excludes**: slow, integration, e2e, network tests  
+**Purpose**: Quick validation during development and CI checks  
+**Coverage**: Unit tests, fast integration tests, basic functionality  
+
+#### Comprehensive Tests (Full Validation)
+```bash
+# Full test suite - comprehensive validation
+make test-all
+# OR
+pytest -q --durations=10
+```
+
+**Includes**: All tests including slow/integration/e2e/network  
+**Purpose**: Complete validation before releases  
+**Coverage**: Full system testing, external dependencies, performance tests  
+
+#### CI Integration
+```bash
+# Fast CI check (sub-30s total)
+make check          # preflight + fast tests + mypy (core files)
+
+# Full CI validation (comprehensive)  
+make check-all      # preflight + all tests + mypy (full)
+```
+
+#### Test Markers
+- `slow`: Long-running tests (>5s)
+- `integration`: External service dependencies  
+- `e2e`: End-to-end workflow tests
+- `network`: Real network/API calls
+
+### Test Configuration
+
+**pytest.ini:**
+```ini
+[pytest]
+addopts = -ra
+testpaths = tests
+asyncio_mode = auto
+markers =
+    slow: marks tests as slow (deselect with '-m "not slow"')
+    integration: marks tests that require external services
+    e2e: marks end-to-end tests
+    network: marks tests that perform real network calls
+```
+
 ### Running Tests
 
 ```bash
-# Run complete test suite
-python scripts/test_complete_system.py
+# Development workflow
+make test           # Fast tests only (alias for test-fast)
 
-# Run individual tool tests
-python scripts/test_enhanced_ppt_generator.py
-python scripts/test_enhanced_document_generator.py
-python scripts/test_unified_system.py
+# Complete validation  
+make test-all       # All tests including slow/integration
 
-# Run with coverage
-pytest tests/ --cov=src --cov-report=html
+# With coverage
+pytest --cov=src --cov-report=html
+
+# Specific markers
+pytest -m "not slow"          # Exclude slow tests
+pytest -m "integration"       # Run only integration tests
+pytest -k "test_health"       # Run specific test patterns
 ```
 
 ### Test Coverage
 
 The system includes comprehensive tests for:
-- ✅ Unit tests for all components
-- ✅ Integration tests for workflows
-- ✅ Performance tests
-- ✅ Error handling tests
-- ✅ API endpoint tests
+- ✅ Unit tests for all components (fast)
+- ✅ Integration tests for workflows (comprehensive)  
+- ✅ Performance tests (slow marker)
+- ✅ Error handling tests (fast)
+- ✅ API endpoint tests (fast + e2e)
 
 ### Test Run Examples
 
