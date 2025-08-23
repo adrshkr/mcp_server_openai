@@ -10,7 +10,12 @@ import os
 from datetime import datetime
 from typing import Any
 
-logger = logging.getLogger(__name__)
+from .core.config import get_config
+from .core.logging import get_logger
+
+# Initialize core systems
+config = get_config()
+logger = get_logger("security")
 
 
 class SecureConfig:

@@ -337,7 +337,7 @@ class TestErrorHandling:
             response = client.post("/health")
             assert response.status_code == 405
 
-    @patch("mcp_server_openai.streaming_http._enhanced_sse_generator")
+    @patch("mcp_server_openai.api.streaming_http._enhanced_sse_generator")
     def test_sse_error_handling(self, mock_generator):
         """Test SSE error handling."""
 

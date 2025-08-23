@@ -6,7 +6,6 @@ with proper readiness, liveness, and startup probes.
 """
 
 import asyncio
-import logging
 import os
 import time
 from datetime import UTC, datetime
@@ -15,9 +14,15 @@ from typing import Any
 import httpx
 import psutil
 
+from .core.config import get_config
+from .core.error_handler import get_error_handler
+from .core.logging import get_logger
 from .security import SecureConfig
 
-logger = logging.getLogger(__name__)
+# Initialize core systems
+config = get_config()
+logger = get_logger("health")
+error_handler = get_error_handler()
 
 
 class HealthChecker:

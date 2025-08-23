@@ -6,7 +6,7 @@ set -euo pipefail
 
 # Configuration
 PROJECT_ID="${PROJECT_ID:-}"
-REGION="${REGION:-us-central1}"
+REGION="${REGION:-europe-west1}"
 SERVICE_NAME="mcp-server-openai"
 IMAGE_NAME="gcr.io/${PROJECT_ID}/${SERVICE_NAME}"
 

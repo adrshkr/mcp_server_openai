@@ -1350,6 +1350,7 @@ dependencies = [
     { name = "slowapi" },
     { name = "starlette" },
     { name = "superclaude" },
+    { name = "types-psutil" },
     { name = "types-requests" },
     { name = "uvicorn", extra = ["standard"] },
     { name = "uvloop" },
@@ -1394,6 +1395,7 @@ requires-dist = [
     { name = "slowapi", specifier = ">=0.1.9" },
     { name = "starlette", specifier = ">=0.37" },
     { name = "superclaude", specifier = ">=3.0.0.2" },
+    { name = "types-psutil", specifier = ">=5.9.5.20240205" },
     { name = "types-requests", specifier = ">=2.32.4.20250809" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.29" },
     { name = "uvloop", specifier = ">=0.19.0" },
@@ -2806,6 +2808,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/c5/8c/7d682431efca5fd290017663ea4588bf6f2c6aad085c7f108c5dbc316e70/typer-0.16.0.tar.gz", hash = "sha256:af377ffaee1dbe37ae9440cb4e8f11686ea5ce4e9bae01b84ae7c63b87f1dd3b", size = 102625, upload-time = "2025-05-26T14:30:31.824Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/76/42/3efaf858001d2c2913de7f354563e3a3a2f0decae3efe98427125a8f441e/typer-0.16.0-py3-none-any.whl", hash = "sha256:1f79bed11d4d02d4310e3c1b7ba594183bcedb0ac73b27a9e5f28f6fb5b98855", size = 46317, upload-time = "2025-05-26T14:30:30.523Z" },
+]
+
+[[package]]
+name = "types-psutil"
+version = "7.0.0.20250822"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/6d/aa/09699c829d7cc4624138d3ae67eecd4de9574e55729b1c63ca3e5a657f86/types_psutil-7.0.0.20250822.tar.gz", hash = "sha256:226cbc0c0ea9cc0a50b8abcc1d91a26c876dcb40be238131f697883690419698", size = 20358, upload-time = "2025-08-22T03:02:04.556Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/7d/46/45006309e20859e12c024d91bb913e6b89a706cd6f9377031c9f7e274ece/types_psutil-7.0.0.20250822-py3-none-any.whl", hash = "sha256:81c82f01aba5a4510b9d8b28154f577b780be75a08954aed074aa064666edc09", size = 23110, upload-time = "2025-08-22T03:02:03.38Z" },
 ]
 
 [[package]]

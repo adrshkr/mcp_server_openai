@@ -589,7 +589,7 @@ async def ppt_generation_endpoint(request: Request) -> Response:
                 return StreamingJSONResponse({"error": f"Missing required field: {field}"}, status_code=400)
 
         # Import the enhanced PPT generator
-        from .tools.enhanced_ppt_generator import create_enhanced_presentation
+        from ..tools.generators.enhanced_ppt_generator import create_enhanced_presentation
 
         # Create presentation
         result = await create_enhanced_presentation(
@@ -634,7 +634,7 @@ async def ppt_analysis_endpoint(request: Request) -> Response:
                 return StreamingJSONResponse({"error": f"Missing required field: {field}"}, status_code=400)
 
         # Import the enhanced PPT generator
-        from .tools.enhanced_ppt_generator import EnhancedPPTGenerator
+        from ..tools.generators.enhanced_ppt_generator import EnhancedPPTGenerator
 
         # Analyze content
         generator = EnhancedPPTGenerator()
@@ -756,7 +756,7 @@ async def unified_content_create_endpoint(request: Request) -> Response:
         body = await request.json()
 
         # Import the unified content creator
-        from .tools.unified_content_creator import create_unified_content
+        from ..tools.generators.unified_content_creator import create_unified_content
 
         # Extract parameters
         title = body.get("title", "")
@@ -820,7 +820,7 @@ async def unified_content_formats_endpoint(request: Request) -> Response:
     REST endpoint for getting supported output formats and capabilities.
     """
     try:
-        from .tools.unified_content_creator import CONTENT_STYLES, LANGUAGES
+        from ..tools.generators.unified_content_creator import CONTENT_STYLES, LANGUAGES
 
         formats_info = {
             "presentation": {
@@ -869,7 +869,7 @@ async def unified_content_status_endpoint(request: Request) -> Response:
         client_id = request.path_params["client_id"]
 
         # Import the unified content creator
-        from .tools.unified_content_creator import _content_creator
+        from ..tools.generators.unified_content_creator import _content_creator
 
         # Retrieve context from memory
         context = await _content_creator.memory.retrieve_context(f"content_{client_id}")
@@ -902,7 +902,7 @@ async def document_generation_endpoint(request: Request) -> Response:
     try:
         data = await request.json()
 
-        from .tools.enhanced_document_generator import DocumentRequest, generate_document
+        from ..tools.generators.enhanced_document_generator import DocumentRequest, generate_document
 
         # Create document request
         doc_request = DocumentRequest(
@@ -941,7 +941,7 @@ async def document_templates_endpoint(request: Request) -> Response:
     REST endpoint for getting available document templates.
     """
     try:
-        from .tools.enhanced_document_generator import DOC_TEMPLATES, HTML_TEMPLATES
+        from ..tools.generators.enhanced_document_generator import DOC_TEMPLATES, HTML_TEMPLATES
 
         templates_info = {
             "html_templates": list(HTML_TEMPLATES.keys()),
@@ -1009,7 +1009,7 @@ async def image_generation_endpoint(request: Request) -> Response:
     try:
         data = await request.json()
 
-        from .tools.enhanced_image_generator import ImageRequest, generate_image
+        from ..tools.generators.enhanced_image_generator import ImageRequest, generate_image
 
         # Create image request
         img_request = ImageRequest(
@@ -1091,7 +1091,7 @@ async def icon_generation_endpoint(request: Request) -> Response:
     try:
         data = await request.json()
 
-        from .tools.enhanced_icon_generator import IconRequest, generate_icon
+        from ..tools.generators.enhanced_icon_generator import IconRequest, generate_icon
 
         # Create icon request
         icon_request = IconRequest(
@@ -1155,7 +1155,7 @@ async def icon_search_endpoint(request: Request) -> Response:
         provider = request.query_params.get("provider", "iconify")
         style = request.query_params.get("style", "outline")
 
-        from .tools.enhanced_icon_generator import search_icons
+        from ..tools.generators.enhanced_icon_generator import search_icons
 
         # Search icons
         results = await search_icons(query, provider, style)
@@ -1203,7 +1203,7 @@ async def content_creation_endpoint(request: Request) -> Response:
     try:
         data = await request.json()
 
-        from .tools.enhanced_content_creator import ContentRequest, create_content
+        from ..tools.generators.enhanced_content_creator import ContentRequest, create_content
 
         # Create content request
         content_request = ContentRequest(

@@ -1,0 +1,6 @@
+{
+  "resume_enabled": true,
+  "strategy": "file_checkpoint",
+  "state_file": ".assistant_resume_state.json",
+  "notes": "Assistant will read this on reconnect to resume tasks."
+}

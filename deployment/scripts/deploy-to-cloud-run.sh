@@ -7,7 +7,7 @@ set -e
 
 # Configuration
 PROJECT_ID="${PROJECT_ID:-your-project-id}"
-REGION="${REGION:-us-central1}"
+REGION="${REGION:-europe-west1}" # us-central1}"
 SERVICE_NAME="enhanced-ppt-generator"
 IMAGE_NAME="gcr.io/${PROJECT_ID}/${SERVICE_NAME}"
 DOCKERFILE="Dockerfile.enhanced"
