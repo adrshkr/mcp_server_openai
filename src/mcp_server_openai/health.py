@@ -70,7 +70,7 @@ class HealthChecker:
             self.last_health_check = datetime.now(UTC)
 
         except Exception as e:
-            logger.exception("Startup check failed")
+            logger.error("Startup check failed", error=e)
             checks["status"] = "unhealthy"
             checks["error"] = str(e)
 
@@ -107,7 +107,7 @@ class HealthChecker:
             checks["memory_percent"] = memory_percent
 
         except Exception as e:
-            logger.exception("Liveness check failed")
+            logger.error("Liveness check failed", error=e)
             checks["status"] = "unhealthy"
             checks["error"] = str(e)
 
@@ -141,7 +141,7 @@ class HealthChecker:
                 checks["failed_checks"] = failed_checks
 
         except Exception as e:
-            logger.exception("Readiness check failed")
+            logger.error("Readiness check failed", error=e)
             checks["status"] = "not_ready"
             checks["error"] = str(e)
 
@@ -181,7 +181,7 @@ class HealthChecker:
                 status["failed_checks"] = failed_checks
 
         except Exception as e:
-            logger.exception("Detailed status check failed")
+            logger.error("Detailed status check failed", error=e)
             status["status"] = "unhealthy"
             status["error"] = str(e)
 
@@ -385,7 +385,7 @@ class HealthChecker:
                 "process": {"pid": os.getpid(), "threads": psutil.Process().num_threads()},
             }
         except Exception as e:
-            logger.exception("Failed to get system metrics")
+            logger.error("Failed to get system metrics", error=e)
             return {"error": str(e)}
 
 

@@ -8,7 +8,7 @@ request validation, and improved error handling.
 from datetime import UTC, datetime
 from typing import Any
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, Form, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
 
@@ -105,6 +105,11 @@ def create_fastapi_app() -> FastAPI:
 app = create_fastapi_app()
 
 
+# NOTE: This FastAPI app is optional in this project (primary server uses streaming_http). Avoid
+# double-decorating endpoints. The duplicate '@app.post(' above line was removed and this comment
+# clarifies the intent.
+
+
 # Health and monitoring endpoints
 @app.get(
     "/health",
@@ -188,6 +193,10 @@ async def service_info():
             "image_generation": "/api/v1/image/generate",
             "icon_generation": "/api/v1/icon/generate",
             "unified_content": "/api/v1/unified/create",
+            "content_creation": "/api/v1/content/create",
+            "voice_transcribe": "/api/v1/voice/transcribe",
+            "voice_speak": "/api/v1/voice/speak",
+            "voice_content": "/api/v1/voice/content",
         },
         "features": {
             "ppt_generation": config.features.enable_ppt_generation,
@@ -195,6 +204,7 @@ async def service_info():
             "image_generation": config.features.enable_image_generation,
             "icon_generation": config.features.enable_icon_generation,
             "research_integration": config.features.enable_research,
+            "voice_mode": config.features.enable_voice_mode,
             "caching": config.features.enable_caching,
             "monitoring": config.features.enable_monitoring,
         },
@@ -286,7 +296,6 @@ async def generate_document(doc_request: DocumentRequest):
             output_format=doc_request.output_format.value,
             template=doc_request.template.value,
             include_toc=doc_request.include_toc,
-            include_images=doc_request.include_images,
             language=doc_request.language,
         )
 
@@ -326,16 +335,16 @@ async def generate_image(image_request: ImageRequest):
     )
 
     try:
-        from ..tools.generators.enhanced_image_generator import generate_image as gen_image
+        from ..tools.generators.enhanced_image_generator import generate_images
 
-        result = await gen_image(
+        result = await generate_images(
             query=image_request.query,
-            style=image_request.style.value,
-            format=image_request.format.value,
-            count=image_request.count,
-            width=image_request.width,
-            height=image_request.height,
             content_type=image_request.content_type,
+            style=image_request.style.value,
+            count=image_request.count,
+            format=image_request.format.value,
+            quality="high",
+            size="medium",
         )
 
         logger.info("Image generation completed successfully")
@@ -374,15 +383,15 @@ async def generate_icon(icon_request: IconRequest):
     )
 
     try:
-        from ..tools.generators.enhanced_icon_generator import generate_icon as gen_icon
+        from ..tools.generators.enhanced_icon_generator import generate_icons
 
-        result = await gen_icon(
-            query=icon_request.query,
+        result = await generate_icons(
+            description=icon_request.query,
+            content_type="presentation",
             style=icon_request.style.value,
-            size=icon_request.size,
             format=icon_request.format.value,
-            color=icon_request.color,
-            provider=icon_request.provider,
+            size=icon_request.size,
+            count=1,
         )
 
         logger.info("Icon generation completed successfully")
@@ -390,6 +399,46 @@ async def generate_icon(icon_request: IconRequest):
 
     except Exception as e:
         logger.error("Icon generation failed", error=e)
+        raise HTTPException(status_code=500, detail=str(e)) from e
+
+
+# Free Content Creation endpoint (LLM optional via env keys)
+@app.post(
+    "/api/v1/content/create",
+    response_model=SuccessResponse,
+    responses={400: {"model": ErrorResponse}, 500: {"model": ErrorResponse}},
+    tags=["Content Generation"],
+    summary="Create content using free services",
+)
+async def create_free_content_endpoint(content_request: dict[str, Any]):
+    """Create content using only free and open-source services."""
+    try:
+        from ..tools.generators.free_content_creator import create_content
+
+        # Accept both 'prompt' and 'brief'
+        prompt = content_request.get("prompt") or content_request.get("brief") or ""
+        if not prompt:
+            raise HTTPException(status_code=400, detail="Prompt or brief is required")
+
+        result = await create_content(
+            prompt=prompt,
+            content_type=content_request.get("content_type", "article"),
+            max_tokens=content_request.get("max_tokens", 2000),
+            tone=content_request.get("tone", "professional"),
+            audience=content_request.get("audience", "general"),
+            include_research=content_request.get("include_research", True),
+            language=content_request.get("language", "en"),
+        )
+
+        return {
+            "status": "success",
+            "data": result,
+            "timestamp": datetime.now(UTC).isoformat(),
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error("Free content creation failed", error=e)
         raise HTTPException(status_code=500, detail=str(e)) from e
 
 
@@ -456,6 +505,87 @@ async def create_unified_content(content_request: UnifiedContentRequest):
 
     except Exception as e:
         logger.error("Unified content creation failed", error=e)
+        raise HTTPException(status_code=500, detail=str(e)) from e
+
+
+# Voice Mode Endpoints (if enabled)
+@app.post(
+    "/api/v1/voice/transcribe",
+    response_model=dict[str, Any],
+    responses={400: {"model": ErrorResponse}, 500: {"model": ErrorResponse}},
+    tags=["Voice Mode"],
+    summary="Speech to Text",
+    description="Convert audio input to text using OpenAI Whisper or Google Speech-to-Text.",
+)
+async def voice_transcribe(audio: UploadFile):
+    """Convert speech to text."""
+    if not config.is_feature_enabled("voice_mode"):
+        raise HTTPException(status_code=404, detail="Voice mode is disabled")
+
+    try:
+        from .voice_interface import voice_interface
+
+        text = await voice_interface.speech_to_text(audio)
+
+        return {"status": "success", "transcribed_text": text, "timestamp": datetime.now(UTC).isoformat()}
+    except Exception as e:
+        logger.error("Speech transcription failed", error=e)
+        raise HTTPException(status_code=500, detail=str(e)) from e
+
+
+@app.post(
+    "/api/v1/voice/speak",
+    responses={400: {"model": ErrorResponse}, 500: {"model": ErrorResponse}},
+    tags=["Voice Mode"],
+    summary="Text to Speech",
+    description="Convert text to speech audio using OpenAI TTS or Google Text-to-Speech.",
+)
+async def voice_speak(text: str = Form(...), voice: str = Form("alloy")):
+    """Convert text to speech and return audio stream."""
+    if not config.is_feature_enabled("voice_mode"):
+        raise HTTPException(status_code=404, detail="Voice mode is disabled")
+
+    try:
+        from .voice_interface import create_audio_stream
+
+        return await create_audio_stream(text, voice)
+    except Exception as e:
+        logger.error("Text-to-speech failed", error=e)
+        raise HTTPException(status_code=500, detail=str(e)) from e
+
+
+@app.post(
+    "/api/v1/voice/content",
+    response_model=dict[str, Any],
+    responses={400: {"model": ErrorResponse}, 500: {"model": ErrorResponse}},
+    tags=["Voice Mode"],
+    summary="Voice Content Creation",
+    description=(
+        "Create content from voice input - transcribe audio, generate content, " "and optionally return audio response."
+    ),
+)
+async def voice_content_creation(
+    audio: UploadFile,
+    content_type: str = Form("article"),
+    return_audio: bool = Form(False),
+    voice: str = Form("alloy"),
+):
+    """Process voice input for content creation."""
+    if not config.is_feature_enabled("voice_mode"):
+        raise HTTPException(status_code=404, detail="Voice mode is disabled")
+
+    try:
+        from .voice_interface import process_voice_content_request
+
+        result = await process_voice_content_request(audio, content_type)
+
+        if not return_audio:
+            # Remove audio response to reduce payload size
+            result.pop("audio_response", None)
+
+        return {"status": "success", "data": result, "timestamp": datetime.now(UTC).isoformat()}
+    except Exception as e:
+        logger.error("Voice content creation failed", error=e)
         raise HTTPException(status_code=500, detail=str(e)) from e
 
 

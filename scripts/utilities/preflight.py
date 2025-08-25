@@ -54,13 +54,33 @@ def main() -> None:
         print(f"{RED}[FAIL] No valid paths to check. Aborting preflight.{RESET}")
         sys.exit(1)
 
-    black_cmd = ["uv", "run", "black"]
+    uv_prefix = ["env", "UV_CACHE_DIR=.uv-cache", "UV_PIP_INDEX_URL=", "UV_LINK_MODE=copy", "uv", "run"]
+    black_cmd = [*uv_prefix, "black"]
     if (root / "black_two_space.py").exists():
-        black_cmd = ["uv", "run", "python", "black_two_space.py"]
+        black_cmd = [*uv_prefix, "python", "black_two_space.py"]
 
-    run("Black dry-run (diff)", [*black_cmd, "--diff", "--color", *existing_paths], root)
-    run("Black auto-format", [*black_cmd, *existing_paths], root)
-    run("Ruff lint", ["uv", "run", "ruff", "check", "--fix", *existing_paths], root)
+    # Run Black in single-process mode to avoid sandboxed socket usage
+    # As a fallback in restricted sandboxes, disable multiprocessing via env
+    env = os.environ.copy()
+    env["PYTHONNOUSERSITE"] = "1"
+    env["BLACK_NUM_WORKERS"] = "1"
+
+    def run_env(desc, args):
+        print(f"{BLUE}[PRE-FLIGHT]{RESET} {desc}...")
+        try:
+            subprocess.run(args, check=True, capture_output=True, text=True, cwd=root, env=env)
+            print(f"{GREEN}[OK] {desc}{RESET}")
+        except subprocess.CalledProcessError as e:
+            print(f"{RED}[FAIL] {desc} failed. Aborting.{RESET}")
+            if e.stdout:
+                print(e.stdout)
+            if e.stderr:
+                print(e.stderr)
+            sys.exit(e.returncode)
+
+    run_env("Black dry-run (diff)", [*black_cmd, "--workers", "1", "--diff", "--color", *existing_paths])
+    run_env("Black auto-format", [*black_cmd, "--workers", "1", *existing_paths])
+    run_env("Ruff lint", [*uv_prefix, "ruff", "check", "--fix", *existing_paths])
 
     print(f"\n{GREEN}[SUCCESS] All preflight checks passed!{RESET}")
 

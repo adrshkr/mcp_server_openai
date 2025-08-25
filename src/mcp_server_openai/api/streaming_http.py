@@ -40,7 +40,7 @@ from starlette.routing import Route, WebSocketRoute
 from starlette.websockets import WebSocket, WebSocketDisconnect
 from websockets.exceptions import ConnectionClosed
 
-from ..logging_utils import get_logger
+from ..core.logging import get_logger
 from ..monitoring.cost_limiter import CostAwareLimiter
 from ..monitoring.monitoring_config import get_monitoring_config
 from ..monitoring.usage_tracker import EnhancedUsageTracker
@@ -179,6 +179,9 @@ async def enhanced_info(request: Request) -> StreamingJSONResponse:
             "mcp_sse": "/mcp/sse",
             "mcp_ws": "/mcp/ws",
             "stream": "/stream",
+            "voice_transcribe": "/api/v1/voice/transcribe",
+            "voice_speak": "/api/v1/voice/speak",
+            "voice_content": "/api/v1/voice/content",
         },
         "metrics": {
             "uptime_seconds": round(uptime, 2),
@@ -1175,6 +1178,144 @@ async def icon_search_endpoint(request: Request) -> Response:
         return StreamingJSONResponse({"error": str(e)}, status_code=500)
 
 
+# Voice Mode Endpoints
+async def voice_transcribe_endpoint(request: Request) -> Response:
+    """Voice transcription endpoint for streaming server."""
+    try:
+        # Check if voice mode is enabled
+        from ..core.config import get_config
+
+        config = get_config()
+        if not config.is_feature_enabled("voice_mode"):
+            return StreamingJSONResponse({"error": "Voice mode is disabled"}, status_code=404)
+
+        # Parse multipart form data
+        form = await request.form()
+        audio_file = form.get("audio")
+
+        if not audio_file:
+            return StreamingJSONResponse({"error": "No audio file provided"}, status_code=400)
+
+        # Import voice interface
+        from .voice_interface import voice_interface
+
+        # Convert to UploadFile-like object
+        class AudioFile:
+            def __init__(self, file_data, filename, content_type):
+                self.file = file_data
+                self.filename = filename
+                self.content_type = content_type
+
+            async def read(self):
+                if hasattr(self.file, "read"):
+                    content = await self.file.read()
+                    return content
+                return self.file
+
+        audio_upload = AudioFile(audio_file.file, audio_file.filename, audio_file.content_type)
+
+        # Transcribe audio
+        text = await voice_interface.speech_to_text(audio_upload)
+
+        response_data = {"status": "success", "transcribed_text": text, "timestamp": datetime.now(UTC).isoformat()}
+
+        return StreamingJSONResponse(response_data, status_code=200)
+
+    except Exception as e:
+        _logger.error(f"Voice transcription error: {e}")
+        return StreamingJSONResponse({"error": str(e)}, status_code=500)
+
+
+async def voice_speak_endpoint(request: Request) -> Response:
+    """Text-to-speech endpoint for streaming server."""
+    try:
+        # Check if voice mode is enabled
+        from ..core.config import get_config
+
+        config = get_config()
+        if not config.is_feature_enabled("voice_mode"):
+            return StreamingJSONResponse({"error": "Voice mode is disabled"}, status_code=404)
+
+        # Parse form data
+        form = await request.form()
+        text = form.get("text", "")
+        voice = form.get("voice", "alloy")
+
+        if not text:
+            return StreamingJSONResponse({"error": "No text provided"}, status_code=400)
+
+        # Import voice interface
+        from .voice_interface import voice_interface
+
+        # Generate speech
+        audio_data = await voice_interface.text_to_speech(str(text), str(voice))
+
+        # Return audio stream
+        def generate():
+            yield audio_data
+
+        return StreamingResponse(
+            generate(), media_type="audio/mpeg", headers={"Content-Disposition": "attachment; filename=response.mp3"}
+        )
+
+    except Exception as e:
+        _logger.error(f"Text-to-speech error: {e}")
+        return StreamingJSONResponse({"error": str(e)}, status_code=500)
+
+
+async def voice_content_endpoint(request: Request) -> Response:
+    """Voice content creation endpoint for streaming server."""
+    try:
+        # Check if voice mode is enabled
+        from ..core.config import get_config
+
+        config = get_config()
+        if not config.is_feature_enabled("voice_mode"):
+            return StreamingJSONResponse({"error": "Voice mode is disabled"}, status_code=404)
+
+        # Parse multipart form data
+        form = await request.form()
+        audio_file = form.get("audio")
+        content_type = form.get("content_type", "article")
+        return_audio = form.get("return_audio", "false").lower() == "true"
+
+        if not audio_file:
+            return StreamingJSONResponse({"error": "No audio file provided"}, status_code=400)
+
+        # Import voice interface
+        from .voice_interface import process_voice_content_request
+
+        # Convert to UploadFile-like object
+        class AudioFile:
+            def __init__(self, file_data, filename, content_type):
+                self.file = file_data
+                self.filename = filename
+                self.content_type = content_type
+
+            async def read(self):
+                if hasattr(self.file, "read"):
+                    content = await self.file.read()
+                    return content
+                return self.file
+
+        audio_upload = AudioFile(audio_file.file, audio_file.filename, audio_file.content_type)
+
+        # Process voice content request
+        result = await process_voice_content_request(audio_upload, str(content_type))
+
+        if not return_audio:
+            # Remove audio response to reduce payload size
+            result.pop("audio_response", None)
+
+        response_data = {"status": "success", "data": result, "timestamp": datetime.now(UTC).isoformat()}
+
+        return StreamingJSONResponse(response_data, status_code=200)
+
+    except Exception as e:
+        _logger.error(f"Voice content creation error: {e}")
+        return StreamingJSONResponse({"error": str(e)}, status_code=500)
+
+
 async def icon_status_endpoint(request: Request) -> Response:
     """
     REST endpoint for getting icon generation status.
@@ -1198,37 +1339,52 @@ async def icon_status_endpoint(request: Request) -> Response:
 # Enhanced Content Creator endpoints
 async def content_creation_endpoint(request: Request) -> Response:
     """
-    REST endpoint for creating content using the enhanced content creator.
+    REST endpoint for creating content using the free content creator.
     """
     try:
         data = await request.json()
 
-        from ..tools.generators.enhanced_content_creator import ContentRequest, create_content
+        from ..tools.generators.free_content_creator import create_content
 
-        # Create content request
-        content_request = ContentRequest(
-            title=data.get("title", ""),
-            content_type=data.get("content_type", "presentation"),
-            brief=data.get("brief", ""),
-            notes=data.get("notes", []),
-            target_length=data.get("target_length", "medium"),
-            content_style=data.get("content_style", "professional"),
-            include_images=data.get("include_images", False),
-            include_icons=data.get("include_icons", False),
-            language=data.get("language", "en"),
+        # Extract parameters from request (accept both 'prompt' and 'brief' for compatibility)
+        prompt = data.get("prompt") or data.get("brief") or ""
+        content_type = data.get("content_type", "article")
+        target_length = data.get("target_length")  # optional
+        max_tokens = data.get("max_tokens", 2000)
+        tone = data.get("tone", "professional")
+        audience = data.get("audience", "general")
+        include_research = data.get("include_research", True)
+        language = data.get("language", "en")
+
+        if not prompt:
+            return StreamingJSONResponse({"error": "Prompt or brief is required"}, status_code=400)
+
+        # Map target_length to approximate max_tokens if provided
+        if target_length:
+            length_map = {"short": 800, "medium": 1500, "long": 2500}
+            max_tokens = length_map.get(str(target_length).lower(), max_tokens)
+
+        # Create content using free services
+        result = await create_content(
+            prompt=prompt,
+            content_type=content_type,
+            max_tokens=max_tokens,
+            tone=tone,
+            audience=audience,
+            include_research=include_research,
+            language=language,
         )
 
-        # Create content
-        result = await create_content(content_request)
-
+        # Format response
         response_data = {
             "status": "success",
             "job_id": str(uuid.uuid4()),
-            "content_type": result.content_type,
-            "file_path": result.file_path,
-            "file_size": result.file_size,
-            "processing_time": result.processing_time,
-            "error_message": result.error_message,
+            "content": result["content"],
+            "word_count": result["word_count"],
+            "generation_time": result["generation_time"],
+            "quality_score": result["quality_score"],
+            "research_sources": result["research_sources"],
+            "metadata": result["metadata"],
         }
 
         return StreamingJSONResponse(response_data, status_code=200)
@@ -1322,6 +1478,10 @@ routes = [
     Route("/api/v1/unified/create", endpoint=unified_content_create_endpoint, methods=["POST"]),
     Route("/api/v1/unified/formats", endpoint=unified_content_formats_endpoint, methods=["GET"]),
     Route("/api/v1/unified/status/{client_id}", endpoint=unified_content_status_endpoint, methods=["GET"]),
+    # Voice Mode endpoints
+    Route("/api/v1/voice/transcribe", endpoint=voice_transcribe_endpoint, methods=["POST"]),
+    Route("/api/v1/voice/speak", endpoint=voice_speak_endpoint, methods=["POST"]),
+    Route("/api/v1/voice/content", endpoint=voice_content_endpoint, methods=["POST"]),
     WebSocketRoute("/mcp/ws", endpoint=websocket_endpoint),
 ]
 

@@ -10,14 +10,8 @@ import uuid
 from datetime import UTC, datetime
 from typing import Any
 
-try:
-    from fastapi import HTTPException, Request
-    from fastapi.responses import JSONResponse
-except ImportError:
-    # Fall back to starlette components if FastAPI is not available
-    from starlette.exceptions import HTTPException  # type: ignore
-    from starlette.requests import Request  # type: ignore
-    from starlette.responses import JSONResponse  # type: ignore
+from fastapi import HTTPException, Request
+from fastapi.responses import JSONResponse
 
 
 class APIError(Exception):

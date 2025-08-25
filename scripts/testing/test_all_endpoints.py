@@ -324,7 +324,7 @@ class EndpointTester:
             if category == "summary":
                 continue
 
-            for test_name, result in tests.items():
+            for _test_name, result in tests.items():
                 total_tests += 1
                 if result["success"]:
                     successful_tests += 1
@@ -413,7 +413,7 @@ async def main():
 
     # Run all tests
     async with EndpointTester() as tester:
-        results = await tester.run_all_tests()
+        await tester.run_all_tests()
         tester.print_results()
         tester.save_results()
 

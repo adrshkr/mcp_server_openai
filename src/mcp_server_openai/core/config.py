@@ -8,6 +8,7 @@ validation, and type safety.
 import os
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Any
 
 from .error_handler import ConfigurationError
 from .logging import get_logger
@@ -34,7 +35,6 @@ class APIKeysConfig:
     openai_api_key: str
     anthropic_api_key: str | None = None
     google_api_key: str | None = None
-    presenton_api_key: str | None = None
     unsplash_access_key: str | None = None
     pixabay_api_key: str | None = None
     brave_search_api_key: str | None = None
@@ -52,6 +52,7 @@ class FeatureFlags:
     enable_icon_generation: bool = True
     enable_document_generation: bool = True
     enable_ppt_generation: bool = True
+    enable_voice_mode: bool = True
     debug_mode: bool = False
 
 
@@ -130,7 +131,6 @@ class UnifiedConfig:
             openai_api_key=openai_key,
             anthropic_api_key=os.getenv("ANTHROPIC_API_KEY"),
             google_api_key=os.getenv("GOOGLE_API_KEY"),
-            presenton_api_key=os.getenv("PRESENTON_API_KEY"),
             unsplash_access_key=os.getenv("UNSPLASH_ACCESS_KEY"),
             pixabay_api_key=os.getenv("PIXABAY_API_KEY"),
             brave_search_api_key=os.getenv("BRAVE_SEARCH_API_KEY"),
@@ -146,6 +146,7 @@ class UnifiedConfig:
             enable_icon_generation=os.getenv("ENABLE_ICON_GENERATION", "true").lower() == "true",
             enable_document_generation=os.getenv("ENABLE_DOCUMENT_GENERATION", "true").lower() == "true",
             enable_ppt_generation=os.getenv("ENABLE_PPT_GENERATION", "true").lower() == "true",
+            enable_voice_mode=os.getenv("ENABLE_VOICE_MODE", "true").lower() == "true",
             debug_mode=os.getenv("DEBUG", "false").lower() == "true",
         )
 
@@ -256,7 +257,6 @@ class UnifiedConfig:
             "openai": self.api_keys.openai_api_key,
             "anthropic": self.api_keys.anthropic_api_key,
             "google": self.api_keys.google_api_key,
-            "presenton": self.api_keys.presenton_api_key,
             "unsplash": self.api_keys.unsplash_access_key,
             "pixabay": self.api_keys.pixabay_api_key,
             "brave": self.api_keys.brave_search_api_key,
@@ -274,6 +274,7 @@ class UnifiedConfig:
             "icon_generation": self.features.enable_icon_generation,
             "document_generation": self.features.enable_document_generation,
             "ppt_generation": self.features.enable_ppt_generation,
+            "voice_mode": self.features.enable_voice_mode,
             "debug": self.features.debug_mode,
         }
         return feature_mapping.get(feature.lower(), False)
@@ -284,11 +285,21 @@ _global_config: UnifiedConfig | None = None
 
 
 def get_config() -> UnifiedConfig:
-    """Get the global configuration instance."""
+    """Get the current configuration instance."""
     global _global_config
     if _global_config is None:
         _global_config = UnifiedConfig.from_env()
     return _global_config
+
+
+def get_notification_config() -> dict[str, Any]:
+    """Get notification configuration."""
+    return {
+        "enabled": os.getenv("ENABLE_NOTIFICATIONS", "false").lower() == "true",
+        "command_windows": os.getenv("NOTIFICATION_COMMAND_WINDOWS", ""),
+        "command_linux": os.getenv("NOTIFICATION_COMMAND_LINUX", ""),
+        "command_darwin": os.getenv("NOTIFICATION_COMMAND_DARWIN", ""),
+    }
 
 
 def reload_config() -> UnifiedConfig:
@@ -296,3 +307,6 @@ def reload_config() -> UnifiedConfig:
     global _global_config
     _global_config = UnifiedConfig.from_env()
     return _global_config
+
+
+# Global config initialized lazily by get_config()

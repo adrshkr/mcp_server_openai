@@ -44,19 +44,6 @@ class StandardLogger:
 
         self.logger.error(message, extra=extra_context, exc_info=error is not None)
 
-    def exception(self, message: str, error: Exception | None = None, **context: Any) -> None:
-        """Log an exception with stack trace.
-
-        Mirrors logging.Logger.exception but preserves structured context. If an explicit
-        error is provided, it will be attached; otherwise the current exception info is used.
-        """
-        extra_context = self._add_context(context)
-        if error is not None:
-            extra_context["error_type"] = type(error).__name__
-            extra_context["error_message"] = str(error)
-        # Always include exc_info for exception-level logs
-        self.logger.error(message, extra=extra_context, exc_info=True)
-
     def critical(self, message: str, error: Exception | None = None, **context: Any) -> None:
         """Log critical message with context and optional exception."""
         extra_context = self._add_context(context)
@@ -172,6 +159,38 @@ def ensure_default_logging() -> None:
     if not _default_setup_done:
         setup_logging(level=logging.INFO, log_file=Path("logs/mcp_server.log"), include_console=True)
         _default_setup_done = True
+
+
+# Additional utility functions for compatibility
+def create_correlation_id() -> str:
+    """Create a unique correlation ID for request tracking."""
+    import uuid
+
+    return str(uuid.uuid4())
+
+
+def log_progress(
+    logger: StandardLogger,
+    tool: str,
+    request_id: str,
+    step: str,
+    details: dict[str, Any] | None = None,
+    progress_percent: float | None = None,
+    correlation_id: str | None = None,
+) -> None:
+    """Log progress information with structured context."""
+    context = {
+        "tool": tool,
+        "request_id": request_id,
+        "step": step,
+        "correlation_id": correlation_id,
+        **(details or {}),
+    }
+
+    if progress_percent is not None:
+        context["progress_percent"] = progress_percent
+
+    logger.info(f"Progress: {tool} - {step}", **context)
 
 
 # Auto-setup default logging

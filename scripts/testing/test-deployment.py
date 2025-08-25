@@ -55,7 +55,7 @@ class DeploymentTester:
         ]
 
         async with httpx.AsyncClient(timeout=10.0) as client:
-            for endpoint, description in endpoints:
+            for endpoint, _description in endpoints:
                 try:
                     response = await client.get(f"{self.base_url}{endpoint}")
 

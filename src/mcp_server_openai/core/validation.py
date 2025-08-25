@@ -99,7 +99,6 @@ class DocumentRequest(BaseModel):
     output_format: OutputFormat = Field(OutputFormat.PDF, description="Output format")
     template: ContentStyle = Field(ContentStyle.PROFESSIONAL, description="Document template")
     include_toc: bool = Field(True, description="Include table of contents")
-    include_images: bool = Field(False, description="Process and include images")
     language: str = Field("en", description="Content language")
 
     @validator("content")

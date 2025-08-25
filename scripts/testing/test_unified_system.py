@@ -87,7 +87,7 @@ async def test_enhanced_ppt_generator() -> None:
         from mcp_server_openai.tools.enhanced_ppt_generator import PPTRequest, PPTResponse, create_enhanced_presentation
 
         # Test PPTRequest creation
-        ppt_req = PPTRequest(
+        PPTRequest(
             brief=TEST_CONFIG["test_brief"],
             notes=TEST_CONFIG["test_notes"],
             target_length="5 slides",
@@ -96,7 +96,7 @@ async def test_enhanced_ppt_generator() -> None:
         log_test_result("PPTRequest Creation", "PASS", "Successfully created PPTRequest")
 
         # Test PPTResponse creation
-        ppt_resp = PPTResponse(
+        PPTResponse(
             status="success", presentation_id="test_123", file_path="test.pptx", file_size=1024, slides_count=5
         )
         log_test_result("PPTResponse Creation", "PASS", "Successfully created PPTResponse")
@@ -104,7 +104,7 @@ async def test_enhanced_ppt_generator() -> None:
         # Test create_enhanced_presentation (mocked)
         try:
             # This would normally call the actual API, but we'll test the function signature
-            result = await create_enhanced_presentation(
+            await create_enhanced_presentation(
                 notes=TEST_CONFIG["test_notes"],
                 brief=TEST_CONFIG["test_brief"],
                 target_length="5 slides",
@@ -131,13 +131,13 @@ async def test_enhanced_image_generator() -> None:
         from mcp_server_openai.tools.enhanced_image_generator import ImageRequest, ImageResult, generate_image
 
         # Test ImageRequest creation
-        img_req = ImageRequest(
+        ImageRequest(
             prompt="professional business presentation", style="professional", size="1024x1024", provider="unsplash"
         )
         log_test_result("ImageRequest Creation", "PASS", "Successfully created ImageRequest")
 
         # Test ImageResult creation
-        img_resp = ImageResult(
+        ImageResult(
             url="https://example.com/image.jpg",
             provider="unsplash",
             title="Professional Business",
@@ -149,7 +149,7 @@ async def test_enhanced_image_generator() -> None:
 
         # Test generate_image (mocked)
         try:
-            result = await generate_image(
+            await generate_image(
                 prompt="professional business presentation", style="professional", size="1024x1024", provider="unsplash"
             )
             log_test_result("Enhanced Image Generation", "PASS", "Successfully called generate_image")
@@ -170,11 +170,11 @@ async def test_enhanced_icon_generator() -> None:
         from mcp_server_openai.tools.enhanced_icon_generator import IconRequest, IconResult, generate_icon
 
         # Test IconRequest creation
-        icon_req = IconRequest(query="business", style="outline", size="64x64", provider="lucide")
+        IconRequest(query="business", style="outline", size="64x64", provider="lucide")
         log_test_result("IconRequest Creation", "PASS", "Successfully created IconRequest")
 
         # Test IconResult creation
-        icon_resp = IconResult(
+        IconResult(
             url="https://example.com/icon.svg",
             provider="lucide",
             title="Business Icon",
@@ -186,7 +186,7 @@ async def test_enhanced_icon_generator() -> None:
 
         # Test generate_icon (mocked)
         try:
-            result = await generate_icon(query="business", style="outline", size="64x64", provider="lucide")
+            await generate_icon(query="business", style="outline", size="64x64", provider="lucide")
             log_test_result("Enhanced Icon Generation", "PASS", "Successfully called generate_icon")
         except Exception as e:
             log_test_result("Enhanced Icon Generation", "SKIP", f"API call failed (expected in test environment): {e}")
@@ -209,7 +209,7 @@ async def test_enhanced_document_generator() -> None:
         )
 
         # Test DocumentRequest creation
-        doc_req = DocumentRequest(
+        DocumentRequest(
             content="# Test Document\n\nThis is a test document.",
             output_format="docx",
             template="professional",
@@ -218,7 +218,7 @@ async def test_enhanced_document_generator() -> None:
         log_test_result("DocumentRequest Creation", "PASS", "Successfully created DocumentRequest")
 
         # Test DocumentResult creation
-        doc_resp = DocumentResult(
+        DocumentResult(
             file_path="test.docx",
             file_size=2048,
             output_format="docx",
@@ -229,7 +229,7 @@ async def test_enhanced_document_generator() -> None:
 
         # Test generate_document (mocked)
         try:
-            result = await generate_document(
+            await generate_document(
                 content="# Test Document\n\nThis is a test document.",
                 output_format="docx",
                 template="professional",
@@ -261,7 +261,7 @@ async def test_unified_content_creator() -> None:
         )
 
         # Test ContentRequest creation
-        content_req = ContentRequest(
+        ContentRequest(
             title=TEST_CONFIG["test_title"],
             brief=TEST_CONFIG["test_brief"],
             notes=TEST_CONFIG["test_notes"],
@@ -272,7 +272,7 @@ async def test_unified_content_creator() -> None:
         log_test_result("ContentRequest Creation", "PASS", "Successfully created ContentRequest")
 
         # Test ContentOutline creation
-        content_outline = ContentOutline(
+        ContentOutline(
             title=TEST_CONFIG["test_title"],
             sections=[{"title": "Test", "type": "content"}],
             total_sections=1,
@@ -290,7 +290,7 @@ async def test_unified_content_creator() -> None:
         log_test_result("ContentSection Creation", "PASS", "Successfully created ContentSection")
 
         # Test ContentResult creation
-        content_result = ContentResult(
+        ContentResult(
             title=TEST_CONFIG["test_title"],
             output_format="presentation",
             file_path="test.pptx",
@@ -304,7 +304,7 @@ async def test_unified_content_creator() -> None:
 
         # Test create_unified_content (mocked)
         try:
-            result = await create_unified_content(
+            await create_unified_content(
                 title=TEST_CONFIG["test_title"],
                 brief=TEST_CONFIG["test_brief"],
                 notes=TEST_CONFIG["test_notes"],
@@ -339,19 +339,19 @@ async def test_mcp_server_integration() -> None:
         sequential_client = MCPSequentialThinkingClient()
         log_test_result("MCP Sequential Thinking Client", "PASS", "Successfully created client")
 
-        brave_client = MCPBraveSearchClient()
+        MCPBraveSearchClient()
         log_test_result("MCP Brave Search Client", "PASS", "Successfully created client")
 
-        memory_client = MCPMemoryClient()
+        MCPMemoryClient()
         log_test_result("MCP Memory Client", "PASS", "Successfully created client")
 
-        filesystem_client = MCPFilesystemClient()
+        MCPFilesystemClient()
         log_test_result("MCP Filesystem Client", "PASS", "Successfully created client")
 
         # Test client methods (mocked)
         try:
             # These would normally make HTTP calls, but we'll test the method signatures
-            outline = await sequential_client.plan_content(
+            await sequential_client.plan_content(
                 TEST_CONFIG["test_title"], TEST_CONFIG["test_brief"], TEST_CONFIG["test_notes"], "presentation"
             )
             log_test_result("MCP Sequential Thinking", "PASS", "Successfully called plan_content")
@@ -488,7 +488,7 @@ async def test_performance_metrics() -> None:
         from mcp_server_openai.tools.unified_content_creator import create_unified_content
 
         # Test processing time tracking
-        start_time = time.time()
+        time.time()
 
         try:
             result = await create_unified_content(

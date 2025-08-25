@@ -4,7 +4,7 @@ import platform
 import subprocess
 from typing import Protocol
 
-from .config import get_notification_config
+from .core.config import get_notification_config
 
 
 class Notifier(Protocol):
@@ -12,7 +12,6 @@ class Notifier(Protocol):
 
     def notify(self, title: str, message: str) -> None:
         """Send a notification."""
-        ...
 
 
 class CommandNotifier:

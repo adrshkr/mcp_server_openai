@@ -179,7 +179,7 @@ async def test_planning_engine_integration() -> None:
         print(f"   Plan stored and retrieved: {stored_plan.title}")
 
     # Test execution history
-    execution_result = await execute_content_plan(plan_id, "preview")
+    await execute_content_plan(plan_id, "preview")
     history = engine.get_execution_history()
     print(f"   Execution history entries: {len(history)}")
 
