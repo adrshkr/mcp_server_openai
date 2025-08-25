@@ -96,9 +96,7 @@ async def test_enhanced_ppt_generator() -> None:
         log_test_result("PPTRequest Creation", "PASS", "Successfully created PPTRequest")
 
         # Test PPTResponse creation
-        PPTResponse(
-            status="success", presentation_id="test_123", file_path="test.pptx", file_size=1024, slides_count=5
-        )
+        PPTResponse(status="success", presentation_id="test_123", file_path="test.pptx", file_size=1024, slides_count=5)
         log_test_result("PPTResponse Creation", "PASS", "Successfully created PPTResponse")
 
         # Test create_enhanced_presentation (mocked)
