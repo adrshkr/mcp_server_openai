@@ -7,7 +7,7 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from mcp_server_openai.tools.enhanced_content_creator import (
+from mcp_server_openai.tools.generators.enhanced_content_creator import (
     ContentPlan,
     ContentRequest,
     MCPClient,
@@ -223,9 +223,9 @@ class TestCreateEnhancedPresentation:
     """Test create_enhanced_presentation function."""
 
     @pytest.mark.asyncio
-    @patch("mcp_server_openai.tools.enhanced_content_creator.MCPClient")
-    @patch("mcp_server_openai.tools.enhanced_content_creator._convert_to_outline")
-    @patch("mcp_server_openai.tools.enhanced_content_creator._save_enhanced_ppt")
+    @patch("mcp_server_openai.tools.generators.enhanced_content_creator.MCPClient")
+    @patch("mcp_server_openai.tools.generators.enhanced_content_creator._convert_to_outline")
+    @patch("mcp_server_openai.tools.generators.enhanced_content_creator._save_enhanced_ppt")
     async def test_create_enhanced_presentation_success(self, mock_save, mock_convert, mock_client_class):
         """Test successful presentation creation."""
         # Mock MCP client
@@ -246,7 +246,7 @@ class TestCreateEnhancedPresentation:
 
         # Mock content creator imports
         with patch(
-            "mcp_server_openai.tools.enhanced_content_creator._create_ppt_from_outline", create=True
+            "mcp_server_openai.tools.generators.enhanced_content_creator._create_ppt_from_outline", create=True
         ) as mock_create:
             mock_create.return_value = mock_presentation
 
@@ -270,7 +270,7 @@ class TestCreateEnhancedPresentation:
         assert "enhancement_methods" in result
 
     @pytest.mark.asyncio
-    @patch("mcp_server_openai.tools.enhanced_content_creator.MCPClient")
+    @patch("mcp_server_openai.tools.generators.enhanced_content_creator.MCPClient")
     async def test_create_enhanced_presentation_error(self, mock_client_class):
         """Test presentation creation with error."""
         # Mock MCP client that raises an exception

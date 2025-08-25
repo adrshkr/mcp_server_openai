@@ -10,7 +10,7 @@ import asyncio
 import time
 from typing import Any
 
-from ..logging_utils import get_logger
+from ..core.logging import get_logger
 from .monitoring_config import get_monitoring_config
 from .usage_tracker import EnhancedUsageTracker
 

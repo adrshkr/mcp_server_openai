@@ -17,9 +17,9 @@ from typing import Any
 import uvicorn
 from uvicorn.config import Config
 
+from .api.streaming_http import app as streaming_app
 from .logging_utils import get_logger
 from .server_config import ServerConfig, get_config, validate_config
-from .streaming_http import app as streaming_app
 
 _logger = get_logger("mcp.enhanced_server")
 

@@ -18,8 +18,8 @@ import pytest
 from starlette.testclient import TestClient
 from starlette.websockets import WebSocketDisconnect
 
+from mcp_server_openai.api.streaming_http import _server_metrics, app
 from mcp_server_openai.server_config import ServerConfig
-from mcp_server_openai.streaming_http import _server_metrics, app
 
 
 class TestEnhancedEndpoints:
@@ -337,7 +337,7 @@ class TestErrorHandling:
             response = client.post("/health")
             assert response.status_code == 405
 
-    @patch("mcp_server_openai.streaming_http._enhanced_sse_generator")
+    @patch("mcp_server_openai.api.streaming_http._enhanced_sse_generator")
     def test_sse_error_handling(self, mock_generator):
         """Test SSE error handling."""
 
@@ -391,7 +391,7 @@ class TestAsyncFunctionality:
     @pytest.mark.asyncio
     async def test_async_sse_generator(self):
         """Test the async SSE generator directly."""
-        from mcp_server_openai.streaming_http import _enhanced_sse_generator
+        from mcp_server_openai.api.streaming_http import _enhanced_sse_generator
 
         # Use max_heartbeats=0 to prevent infinite heartbeat loop in tests
         generator = _enhanced_sse_generator("test_client", {"compression": False}, max_heartbeats=0)
@@ -415,7 +415,7 @@ class TestAsyncFunctionality:
         """Test WebSocket heartbeat functionality."""
         # This would require a more complex async test setup
         # For now, we verify the heartbeat logic exists
-        from mcp_server_openai.streaming_http import websocket_endpoint
+        from mcp_server_openai.api.streaming_http import websocket_endpoint
 
         # Mock WebSocket
         mock_websocket = AsyncMock()

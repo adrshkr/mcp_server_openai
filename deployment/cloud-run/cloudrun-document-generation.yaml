@@ -1,0 +1,174 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: enhanced-document-generation
+  annotations:
+    run.googleapis.com/ingress: all
+    run.googleapis.com/execution-environment: gen2
+spec:
+  template:
+    metadata:
+      annotations:
+        run.googleapis.com/execution-environment: gen2
+        run.googleapis.com/cpu-throttling: "false"
+        run.googleapis.com/startup-cpu-boost: "true"
+    spec:
+      containerConcurrency: 10
+      timeoutSeconds: 300
+      containers:
+      - image: gcr.io/PROJECT_ID/enhanced-document-generation:latest
+        ports:
+        - containerPort: 3007
+        resources:
+          limits:
+            cpu: "2"
+            memory: "4Gi"
+          requests:
+            cpu: "1"
+            memory: "2Gi"
+        env:
+        - name: PORT
+          value: "3007"
+        - name: ENVIRONMENT
+          value: "production"
+        - name: LOG_LEVEL
+          value: "INFO"
+        - name: MAX_WORKERS
+          value: "4"
+        - name: TEMPLATE_CACHE_SIZE
+          value: "100"
+        - name: PANDOC_TIMEOUT
+          value: "60"
+        - name: WEASYPRINT_TIMEOUT
+          value: "30"
+        - name: REPORTLAB_TIMEOUT
+          value: "30"
+        envFrom:
+        - configMapRef:
+            name: document-generation-config
+        - secretRef:
+            name: document-generation-secrets
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3007
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 3007
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+        volumeMounts:
+        - name: document-templates
+          mountPath: /app/templates
+          readOnly: true
+        - name: document-output
+          mountPath: /app/output
+      volumes:
+      - name: document-templates
+        configMap:
+          name: document-templates-config
+      - name: document-output
+        emptyDir: {}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: document-generation-config
+data:
+  # Document generation settings
+  DEFAULT_TEMPLATE: "professional"
+  DEFAULT_LANGUAGE: "en"
+  DEFAULT_FONT_SIZE: "12"
+  DEFAULT_LINE_SPACING: "1.5"
+
+  # Pandoc settings
+  PANDOC_TIMEOUT: "60"
+  PANDOC_MAX_MEMORY: "2G"
+
+  # WeasyPrint settings
+  WEASYPRINT_TIMEOUT: "30"
+  WEASYPRINT_MAX_WORKERS: "4"
+
+  # ReportLab settings
+  REPORTLAB_TIMEOUT: "30"
+  REPORTLAB_DEFAULT_FONT: "Helvetica"
+
+  # HTML generation settings
+  HTML_TEMPLATE_CACHE_SIZE: "100"
+  HTML_DEFAULT_CSS_FRAMEWORK: "tailwind"
+
+  # Output settings
+  MAX_FILE_SIZE: "50MB"
+  ALLOWED_FORMATS: "docx,pdf,html,md,tex,rtf"
+
+  # Security settings
+  ALLOW_CUSTOM_CSS: "true"
+  ALLOW_EXTERNAL_FONTS: "true"
+  MAX_CUSTOM_CSS_SIZE: "100KB"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: document-generation-secrets
+type: Opaque
+data:
+  # API keys for external services (if needed)
+  # These should be set via gcloud secrets commands
+  EXTERNAL_API_KEY: ""
+  CUSTOM_FONT_API_KEY: ""
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: document-templates-config
+data:
+  # Professional template
+  professional.html: |
+    <!DOCTYPE html>
+    <html lang="{{language}}" class="scroll-smooth">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{{title}}</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+    </head>
+    <body class="bg-gray-50 text-gray-900">
+        <main class="max-w-4xl mx-auto px-8 py-12">
+            <h1 class="text-3xl font-bold mb-8">{{title}}</h1>
+            <div class="prose prose-lg max-w-none">
+                {{content}}
+            </div>
+        </main>
+    </body>
+    </html>
+
+  # Academic template
+  academic.html: |
+    <!DOCTYPE html>
+    <html lang="{{language}}" class="scroll-smooth">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{{title}}</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+    </head>
+    <body class="bg-white text-gray-900">
+        <header class="bg-gray-900 text-white py-8">
+            <div class="max-w-4xl mx-auto px-4">
+                <h1 class="text-4xl font-bold text-center">{{title}}</h1>
+            </div>
+        </header>
+        <main class="max-w-4xl mx-auto px-4 py-12">
+            <div class="academic-content">
+                {{content}}
+            </div>
+        </main>
+    </body>
+    </html>

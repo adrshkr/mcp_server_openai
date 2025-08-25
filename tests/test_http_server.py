@@ -1,6 +1,6 @@
 from starlette.testclient import TestClient
 
-from mcp_server_openai.http_server import app
+from mcp_server_openai.api.http_server import app
 
 
 def test_health():

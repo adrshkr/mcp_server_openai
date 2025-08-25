@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "context-coder": "^1.0.0"
+  },
+  "scripts": {
+    "test:tdd": "uv run pytest -q && node -e \"const fs=require('fs');const p='.claude/tdd-guard/data/test.json';if(fs.existsSync(p)){console.log('TDD Guard data written:', p);}else{console.error('TDD Guard data missing:', p);process.exit(1);}\""
+  }
+}

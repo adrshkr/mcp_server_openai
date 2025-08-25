@@ -1,49 +1,263 @@
-# 🚀 MCP Server OpenAI - Production-Ready AI Content Platform
+# 🚀 MCP Server OpenAI - AI Content Creation Platform
 
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Status: Production Ready](https://img.shields.io/badge/Status-Production%20Ready-green.svg)](https://github.com/adrshkr/mcp-server-openai)
 [![GCP Cloud Run](https://img.shields.io/badge/GCP-Cloud%20Run-4285f4.svg)](https://cloud.google.com/run)
-[![Health Monitoring](https://img.shields.io/badge/Health-Monitoring-success.svg)](#health-monitoring--observability)
-[![Security Hardened](https://img.shields.io/badge/Security-Hardened-red.svg)](#security--production-deployment)
 
-> **Enterprise-grade MCP server with comprehensive content creation tools, health monitoring, security hardening, and optimized GCP Cloud Run deployment.**
+> **Create professional presentations, documents, and web content with AI-powered tools. Production-ready with enterprise security and monitoring.**
 
-## 🌟 Overview
+## 🎯 What This Platform Does
 
-MCP Server OpenAI is a production-ready, enterprise-grade content creation platform that combines multiple AI-powered tools under a single, secure interface. Built for scalability and reliability, it features comprehensive health monitoring, security hardening, and is optimized for GCP Cloud Run deployment with sub-second response times.
+**MCP Server OpenAI** is an AI-powered content creation platform that helps you generate:
 
-### ✨ Key Features
+- 📊 **PowerPoint Presentations** - Professional slides with AI-generated content, images, and icons
+- 📄 **Documents** - Word docs, PDFs, HTML pages with smart formatting and research integration
+- 🖼️ **Images & Icons** - AI-generated visuals that perfectly match your content
+- 🔍 **Research-Enhanced Content** - Automatically researched, fact-checked, and optimized content
 
-#### 🎯 **Core Content Creation**
-- **Unified Interface**: Single API for all content types (PPT, DOC, HTML, PDF)
-- **AI-Powered Planning**: Intelligent content structuring with 16+ specialized tools
-- **Multi-Format Support**: Professional templates for all output types
-- **Visual Enhancement**: Automatic image and icon generation
+**Perfect for:** Business professionals, educators, content creators, marketers, and anyone who needs to create professional content quickly and efficiently.
 
-#### 🔒 **Enterprise Security**
-- **Zero Exposed Secrets**: GCP Secret Manager integration
-- **Non-root Containers**: Security-hardened Docker deployment  
-- **API Key Validation**: Comprehensive secret validation and rotation
-- **Secure Configuration**: Production-ready security framework
+## ⚡ Quick Start (5 Minutes)
 
-#### 🏥 **Health Monitoring & Observability**
-- **Comprehensive Health Checks**: Startup, liveness, and readiness probes
-- **Performance Monitoring**: Sub-100ms health check responses
-- **System Metrics**: CPU, memory, disk, and dependency monitoring
-- **GCP Integration**: Native Cloud Run health probe support
+### **Prerequisites**
+- Python 3.11+ installed
+- OpenAI API key ([get one here](https://platform.openai.com/api-keys))
 
-#### ⚡ **Performance Optimization**
-- **Fast Startup**: <10 second container startup with pre-validation
-- **Efficient Runtime**: uvloop integration for 25% better async performance
-- **Optimized Builds**: Multi-stage Docker builds with 50% size reduction
-- **Auto-scaling**: Intelligent scaling from 1-100 instances
+### **1. Install & Setup**
+```bash
+# Clone and enter the project
+git clone https://github.com/adrshkr/mcp-server-openai.git
+cd mcp-server-openai
 
-#### 🚀 **Production Deployment**
-- **GCP Cloud Run Ready**: Optimized for serverless deployment
-- **Automated Deployment**: One-command deployment with validation
-- **Cost Optimization**: Resource limits and budget monitoring
-- **Monitoring Integration**: GCP Monitoring dashboards and alerts
+# Install dependencies (fast with uv)
+pip install uv
+uv sync
+
+# Set up your API key
+echo "OPENAI_API_KEY=your-actual-key-here" > .env
+```
+
+### **2. Start the Server**
+```bash
+# Quick start (recommended)
+python scripts/utilities/startup.py
+
+# Or manually
+python -m mcp_server_openai --http --port 8000
+```
+
+### **3. Test It Works**
+```bash
+# Check server health
+curl http://localhost:8000/health
+
+# Create your first presentation
+curl -X POST http://localhost:8000/api/v1/ppt/generate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "notes": ["Introduction to AI", "Benefits of automation", "Future outlook"],
+    "brief": "AI presentation for business meeting"
+  }'
+```
+
+**🎉 That's it!** Your AI content creation server is now running at `http://localhost:8000`
+
+## 🛠️ What You Can Create
+
+### **📊 Professional Presentations**
+```bash
+POST /api/v1/ppt/generate
+{
+  "notes": ["Market analysis", "Growth projections", "Recommendations"],
+  "brief": "Q4 business review presentation",
+  "template_preference": "professional",
+  "include_images": true
+}
+```
+
+### **📄 Smart Documents**
+```bash
+POST /api/v1/document/generate
+{
+  "title": "Project Report",
+  "content": "# Executive Summary\n\nProject overview...",
+  "output_format": "pdf",
+  "template": "corporate"
+}
+```
+
+### **🖼️ Contextual Images**
+```bash
+POST /api/v1/image/generate
+{
+  "query": "modern office workspace",
+  "style": "professional",
+  "format": "jpeg"
+}
+```
+
+### **🎨 Matching Icons**
+```bash
+POST /api/v1/icon/generate
+{
+  "query": "technology innovation",
+  "style": "outline",
+  "size": "medium"
+}
+```
+
+## ✨ Key Features
+
+- **🎯 Unified Content Creation**: Single API for presentations, documents, images, and icons
+- **🧠 AI-Powered Planning**: Intelligent content structuring and research integration
+- **🎨 Professional Templates**: Multiple styles for business, academic, and creative content
+- **🔍 Auto-Research**: Automatically enhance content with web research and fact-checking
+- **🖼️ Visual Enhancement**: AI-generated images and icons that match your content perfectly
+- **⚡ Fast & Reliable**: Production-ready with health monitoring and error handling
+- **🔒 Enterprise Security**: Secure API key management and hardened deployment
+- **🚀 Easy Deployment**: One-command deployment to Google Cloud Run or Docker
+
+## 📁 Project Structure
+
+```
+mcp_server_openai/
+├── 📄 Core Files
+│   ├── README.md              # Main documentation
+│   ├── LICENSE               # MIT license
+│   ├── Makefile             # Development commands
+│   ├── pyproject.toml       # Python project configuration
+│   ├── requirements.txt     # Production dependencies
+│   └── uv.lock             # Lock file for reproducible builds
+│
+├── 🏗️ Source Code
+│   └── src/mcp_server_openai/
+│       ├── __init__.py      # Package initialization
+│       ├── __main__.py      # CLI entry point
+│       ├── main.py          # MCP server entry point
+│       ├── server.py        # Core MCP server
+│       ├── health.py        # Health check logic
+│       ├── security.py      # Security validation
+│       │
+│       ├── 🌐 API Layer
+│       │   ├── http_server.py    # HTTP server implementation
+│       │   └── streaming_http.py # Streaming endpoints
+│       │
+│       ├── 🔧 Tools (MCP Tools)
+│       │   ├── generators/       # Content generation tools
+│       │   │   ├── content_creator.py
+│       │   │   ├── enhanced_ppt_generator.py
+│       │   │   ├── enhanced_document_generator.py
+│       │   │   └── unified_content_creator.py
+│       │   │
+│       │   ├── mcp_integrations/ # MCP server integrations
+│       │   │   ├── mcp_sequential_thinking.py
+│       │   │   ├── mcp_content_validation.py
+│       │   │   └── mcp_research_integration.py
+│       │   │
+│       │   └── utilities/        # General utility tools
+│       │       ├── math_tools.py
+│       │       └── web_tools.py
+│       │
+│       ├── 📝 Prompts
+│       │   ├── templates/    # Jinja2 templates
+│       │   ├── content_create.py
+│       │   └── manager.py
+│       │
+│       ├── 📊 Monitoring
+│       │   ├── cost_limiter.py
+│       │   ├── usage_tracker.py
+│       │   └── monitoring_config.py
+│       │
+│       └── 🔐 Resources
+│           └── health.py     # Health check resources
+│
+├── ⚙️ Configuration
+│   └── config/
+│       ├── enhanced_*.yaml      # Tool configurations
+│       ├── params-*.json        # Parameter files
+│       ├── mcp-servers-config.json
+│       ├── mypy.ini            # Type checking config
+│       └── pytest.ini          # Test configuration
+│
+├── 🚀 Deployment
+│   ├── docker/                 # Container images
+│   │   ├── Dockerfile          # Main production image
+│   │   ├── Dockerfile.enhanced # Enhanced features
+│   │   └── Dockerfile.unified  # Unified system
+│   │
+│   ├── cloud-run/             # GCP Cloud Run configs
+│   │   ├── cloud-run-service.yaml
+│   │   └── config.yaml
+│   │
+│   ├── docker-compose.yml      # Local development
+│   ├── docker-compose.complete.yml
+│   │
+│   └── scripts/               # Deployment automation
+│       ├── deploy-optimized.sh
+│       ├── deploy-to-cloud-run.sh
+│       └── deploy-unified-system.sh
+│
+├── 📜 Scripts
+│   ├── demos/                 # Demo and example scripts
+│   │   ├── demo_enhanced_content.py
+│   │   └── demo_unified_content.py
+│   │
+│   ├── testing/              # Test scripts
+│   │   ├── test-deployment.py
+│   │   ├── test_complete_system.py
+│   │   └── test_unified_system.py
+│   │
+│   ├── utilities/            # System utilities
+│   │   ├── startup.py        # Optimized startup
+│   │   ├── preflight.py      # Pre-deployment checks
+│   │   └── verify_endpoints.py
+│   │
+│   └── development/          # Development tools
+│       ├── call_tool.py
+│       └── register_mcp_configs.sh
+│
+├── 🧪 Tests
+│   └── tests/
+│       ├── test_*.py           # Unit and integration tests
+│       ├── conftest.py         # Test configuration
+│       └── test_sanity.py      # Basic functionality tests
+│
+├── 📚 Documentation
+│   └── docs/
+│       ├── API_REFERENCE.md    # API documentation
+│       ├── DEPLOYMENT_GUIDE.md # Deployment instructions
+│       ├── README-SECURITY.md  # Security guidelines
+│       └── TESTING_GUIDE.md    # Testing strategies
+│
+├── 🎨 Templates
+│   └── templates/
+│       ├── html/              # HTML templates
+│       │   ├── professional.html
+│       │   └── corporate.html
+│       └── pandoc/            # Pandoc templates
+│
+├── 🔧 Tools
+│   └── tools/
+│       ├── ccstatusline/      # Status line tool
+│       ├── notify.ps1         # Windows notification
+│       └── statusline-manager.sh
+│
+├── 📊 Data & Output
+│   ├── data/                  # Runtime data
+│   │   ├── files/
+│   │   └── memory.db
+│   │
+│   ├── output/               # Generated content
+│   │   ├── documents/
+│   │   └── presentations/
+│   │
+│   ├── logs/                 # Log files
+│   │   └── mcp_server.log
+│   │
+│   ├── examples/             # Example files
+│   └── build/                # Build artifacts
+```
 
 ## 🏗️ System Architecture
 
@@ -150,201 +364,75 @@ validate_configuration()
 
 ⚠️ **CRITICAL**: If you're setting up this server, please review `README-SECURITY.md` for complete security setup instructions and emergency procedures.
 
-## 🚀 Quick Start
+## 🌐 Deploy to Production
 
-### Prerequisites
-
-#### For Local Development
-- **Python 3.11+** with pip/uv package manager
-- **Docker** (optional, for containerized development)
-
-#### For GCP Cloud Run Deployment
-- **Google Cloud CLI** (gcloud) authenticated with your project
-- **Docker** for building container images
-- **GCP Project** with Cloud Run, Secret Manager, and Container Registry enabled
-- **API Keys** for OpenAI, Anthropic, Google, etc. (stored in Secret Manager)
-
-#### Required API Keys
-- **OpenAI API Key** (required): Content generation
-- **Anthropic API Key** (optional): Claude integration
-- **Google API Key** (optional): Enhanced features
-- **Unsplash/Pixabay Keys** (optional): Image generation
-
-### Local Development Setup
-
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/adrshkr/mcp-server-openai.git
-   cd mcp-server-openai
-   ```
-
-2. **Set up secure environment**
-   ```bash
-   cp .env.template .env
-   # Edit .env with your actual API keys (NEVER commit this file!)
-   ```
-
-3. **Install dependencies**
-   ```bash
-   # Using uv (recommended for faster installs)
-   pip install uv
-   uv sync
-   
-   # Or using pip
-   pip install -e .
-   ```
-
-4. **Start the HTTP server**
-   ```bash
-   # Using the optimized startup script
-   python scripts/startup.py
-   
-   # Or directly with uvicorn
-   uvicorn mcp_server_openai.http_server:app --host 0.0.0.0 --port 8080
-   ```
-
-5. **Test the server**
-   ```bash
-   # Test health endpoints
-   curl http://localhost:8080/health/live
-   curl http://localhost:8080/status
-   
-   # Run comprehensive tests
-   python scripts/test-deployment.py --url http://localhost:8080
-   ```
-
-### GCP Cloud Run Deployment (Production)
-
-Deploy with enterprise-grade security and monitoring:
-
-1. **Set up GCP Project**
-   ```bash
-   export PROJECT_ID="your-gcp-project-id"
-   gcloud config set project $PROJECT_ID
-   
-   # Enable required APIs
-   gcloud services enable run.googleapis.com
-   gcloud services enable secretmanager.googleapis.com
-   gcloud services enable containerregistry.googleapis.com
-   ```
-
-2. **Deploy with automated script** ⚡
-   ```bash
-   # One-command deployment with validation
-   ./scripts/deploy-optimized.sh
-   ```
-
-   **This script automatically:**
-   - ✅ Creates GCP secrets (you'll need to update with real API keys)
-   - ✅ Sets up service account with minimal permissions
-   - ✅ Builds optimized Docker image with security hardening
-   - ✅ Deploys to Cloud Run with comprehensive health checks
-   - ✅ Validates deployment with health endpoint testing
-
-3. **Manual deployment** (alternative)
-   ```bash
-   # Build and push image
-   docker build -t gcr.io/$PROJECT_ID/mcp-server-openai .
-   docker push gcr.io/$PROJECT_ID/mcp-server-openai
-   
-   # Deploy with optimized configuration
-   sed "s/PROJECT_ID/$PROJECT_ID/g" cloud-run-service.yaml | \
-     gcloud run services replace - --region=us-central1
-   ```
-
-4. **Update API keys in Secret Manager**
-   ```bash
-   # Replace placeholder values with actual API keys
-   echo "your-actual-openai-key" | gcloud secrets versions add openai-api-key --data-file=-
-   echo "your-actual-anthropic-key" | gcloud secrets versions add anthropic-api-key --data-file=-
-   ```
-
-5. **Verify deployment**
-   ```bash
-   SERVICE_URL=$(gcloud run services describe mcp-server-openai --region=us-central1 --format="value(status.url)")
-   
-   # Test health endpoints
-   curl $SERVICE_URL/health/live
-   curl $SERVICE_URL/status
-   
-   # Run comprehensive deployment tests
-   python scripts/test-deployment.py --url $SERVICE_URL --wait 10
-   ```
-
-### Post-Deployment Monitoring
-
-After successful deployment:
-
-- **📊 Health Dashboard**: `$SERVICE_URL/status`
-- **🔍 Service Info**: `$SERVICE_URL/info` 
-- **📈 GCP Monitoring**: Cloud Run metrics in GCP Console
-- **💰 Cost Monitoring**: Billing dashboard with configured alerts
-- **🚨 Alerting**: Configured for >5% error rate or >90% resource usage
-
-### Docker Deployment
-
+### **Option 1: Google Cloud Run (Recommended)**
 ```bash
-# Build and start all services
-docker-compose -f docker-compose.complete.yml up --build
+# One-command deployment with enterprise security
+./deployment/scripts/deploy-optimized.sh
 
-# View logs
-docker-compose -f docker-compose.complete.yml logs -f
-
-# Stop services
-docker-compose -f docker-compose.complete.yml down
+# Your server will be live at: https://your-service-url
+# Includes: SSL, health checks, auto-scaling, monitoring
 ```
 
-## 📚 API Reference
+### **Option 2: Docker**
+```bash
+# Build and run with Docker
+docker build -t mcp-server .
+docker run -p 8000:8000 --env-file .env mcp-server
 
-### Core Endpoints
-
-#### Unified Content Creation
-```http
-POST /api/v1/unified/create
-Content-Type: application/json
-
-{
-  "title": "My Content",
-  "brief": "Content description",
-  "notes": ["Point 1", "Point 2", "Point 3"],
-  "output_format": "html",
-  "content_style": "professional",
-  "include_images": true,
-  "include_icons": true
-}
+# Or use docker-compose for full stack
+docker-compose -f docker-compose.complete.yml up
 ```
 
-#### Individual Tool Endpoints
+### **Option 3: Local Production**
+```bash
+# Run with production settings
+uvicorn mcp_server_openai.api.http_server:app \
+  --host 0.0.0.0 --port 8000 --workers 4
+```
 
-- **Enhanced PPT Generator**: `POST /api/v1/ppt/generate`
-- **Enhanced Document Generator**: `POST /api/v1/document/generate`
-- **Enhanced Image Generator**: `POST /api/v1/image/generate`
-- **Enhanced Icon Generator**: `POST /api/v1/icon/generate`
+## 🔧 Configuration
 
-#### MCP Server Endpoints
+### **Required Environment Variables**
+```bash
+OPENAI_API_KEY=your-openai-key        # Required for AI features
+```
 
-- **Sequential Thinking**: `POST /api/v1/mcp/sequential-thinking/think`
-- **Brave Search**: `POST /api/v1/mcp/brave-search/search`
-- **Memory**: `POST /api/v1/mcp/memory/store`
-- **Filesystem**: `POST /api/v1/mcp/filesystem/write`
-- **Research Integration**: `POST /api/v1/mcp/research/conduct`
-- **Content Validation**: `POST /api/v1/mcp/validation/validate`
-- **Advanced Orchestration**: `POST /api/v1/mcp/orchestration/create-workflow`
+### **Optional API Keys** (for enhanced features)
+```bash
+ANTHROPIC_API_KEY=your-anthropic-key  # Claude AI integration
+GOOGLE_API_KEY=your-google-key        # Google AI features
+UNSPLASH_ACCESS_KEY=your-unsplash-key # Stock photos
+PIXABAY_API_KEY=your-pixabay-key      # More stock photos
+BRAVE_SEARCH_API_KEY=your-brave-key   # Web research
+```
 
-#### Health & Monitoring Endpoints
+### **Server Configuration**
+```bash
+# Server settings
+HOST=0.0.0.0                         # Server host
+PORT=8000                            # Server port
+WORKERS=4                            # Number of workers
 
-- **Basic Health Check**: `GET /health` - Simple "ok" response
+# Feature flags
+ENABLE_MONITORING=true               # Health monitoring
+ENABLE_CACHING=false                 # Response caching
+DEBUG=false                          # Debug mode
+```
+
+## 📊 Health & Monitoring
+
+Your server includes built-in monitoring and health checks:
+
+### **Health Endpoints**
+- **Basic Health**: `GET /health` - Simple server status
 - **Liveness Probe**: `GET /health/live` - Container restart decisions
 - **Readiness Probe**: `GET /health/ready` - Traffic routing decisions
-- **Startup Probe**: `GET /health/startup` - Initialization validation
-- **Detailed Status**: `GET /status` - Comprehensive system diagnostics
-- **Service Info**: `GET /info` - API discovery and service metadata
+- **Detailed Status**: `GET /status` - Full system diagnostics
+- **Service Info**: `GET /info` - Available endpoints and features
 
-Example health check response:
-```http
-GET /health/ready
-```
-
+### **Example Health Response**
 ```json
 {
   "timestamp": "2024-01-01T00:00:00Z",
@@ -358,15 +446,108 @@ GET /health/ready
 }
 ```
 
-### Response Formats
+## 🚨 Troubleshooting
 
-All endpoints return JSON responses with consistent structure:
+### **Server Won't Start**
+```bash
+# Check Python version
+python --version  # Should be 3.11+
 
+# Check dependencies
+uv sync
+
+# Check API key
+echo $OPENAI_API_KEY
+
+# Check logs
+tail -f logs/mcp_server.log
+```
+
+### **API Errors**
+```bash
+# Check server health
+curl http://localhost:8000/status
+
+# Test specific endpoint
+curl -X POST http://localhost:8000/api/v1/ppt/generate \
+  -H "Content-Type: application/json" \
+  -d '{"notes": ["test"], "brief": "test"}'
+```
+
+### **Performance Issues**
+- **Slow responses**: Check API key limits and server resources
+- **Memory issues**: Reduce workers: `--workers 1`
+- **Timeout errors**: Increase timeout settings in configuration
+
+### **Common Error Solutions**
+| Error | Solution |
+|-------|----------|
+| `ImportError: No module named 'mcp_server_openai'` | Run `uv sync` or `pip install -e .` |
+| `401 Unauthorized` | Check your `OPENAI_API_KEY` is valid |
+| `Health check failed` | Verify all required environment variables are set |
+| `Port already in use` | Change port: `--port 8001` or kill existing process |
+
+## 🎨 Available Tools
+
+| Tool | What It Does | Best For | API Endpoint |
+|------|-------------|----------|--------------|
+| **PPT Generator** | Creates PowerPoint presentations with AI content | Business meetings, education | `POST /api/v1/ppt/generate` |
+| **Document Generator** | Creates Word/PDF/HTML documents | Reports, manuals, web pages | `POST /api/v1/document/generate` |
+| **Image Generator** | Finds/creates relevant images | Visual content, presentations | `POST /api/v1/image/generate` |
+| **Icon Generator** | Creates matching icons | UI elements, infographics | `POST /api/v1/icon/generate` |
+| **Content Planner** | AI-powered content structuring | Complex projects, research | `POST /api/v1/mcp/sequential-thinking/think` |
+| **Web Research** | Automated web research | Fact-checking, content enhancement | `POST /api/v1/mcp/brave-search/search` |
+| **Content Validation** | Quality assessment and optimization | Content review, SEO | `POST /api/v1/mcp/validation/validate` |
+
+## 📚 API Reference
+
+### **Core Content Creation**
+
+#### **Create Presentation**
+```bash
+POST /api/v1/ppt/generate
+{
+  "notes": ["Slide 1 content", "Slide 2 content"],
+  "brief": "Presentation description",
+  "template_preference": "professional|creative|modern",
+  "include_images": true,
+  "include_icons": true
+}
+```
+
+#### **Generate Document**
+```bash
+POST /api/v1/document/generate
+{
+  "title": "Document Title",
+  "content": "# Heading\n\nContent here...",
+  "output_format": "pdf|docx|html|markdown",
+  "template": "professional|academic|creative"
+}
+```
+
+#### **Create Images**
+```bash
+POST /api/v1/image/generate
+{
+  "query": "modern office workspace",
+  "style": "professional|creative|minimalist",
+  "format": "jpeg|png|webp",
+  "count": 1
+}
+```
+
+### **Response Format**
+All endpoints return consistent JSON responses:
 ```json
 {
   "status": "success|error",
-  "data": {...},
-  "message": "Optional message",
+  "data": {
+    "file_path": "/output/generated_file.pptx",
+    "file_size": "2.1MB",
+    "generation_time": "12.3s"
+  },
+  "message": "Content generated successfully",
   "timestamp": "2024-01-01T00:00:00Z"
 }
 ```
@@ -798,11 +979,34 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Unsplash**: For stock photo API
 - **Iconify**: For icon library API
 
-## 📞 Support
+## 📚 Learn More
 
-- **Documentation**: [docs/](docs/)
-- **Issues**: [GitHub Issues](https://github.com/your-username/unified-content-creator/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/your-username/unified-content-creator/discussions)
+- **[Complete Documentation](docs/)** - Full guides and advanced features
+- **[Security Guide](docs/README-SECURITY.md)** - Production security setup
+- **[Deployment Guide](docs/DEPLOYMENT_GUIDE.md)** - Advanced deployment options
+- **[API Reference](docs/API_REFERENCE.md)** - Complete API documentation
+
+## 🤝 Support & Community
+
+- **🐛 Issues**: [GitHub Issues](https://github.com/adrshkr/mcp-server-openai/issues)
+- **💬 Discussions**: [GitHub Discussions](https://github.com/adrshkr/mcp-server-openai/discussions)
+- **🔒 Security**: See [README-SECURITY.md](docs/README-SECURITY.md) for security issues
+- **📖 Documentation**: Browse the [docs/](docs/) folder for detailed guides
+
+## 🚀 What's Next?
+
+After getting started, you might want to:
+
+1. **🔧 Customize Templates** - Add your own presentation and document templates
+2. **🔍 Enable Research** - Set up Brave Search API for automated research
+3. **🖼️ Add Image Sources** - Configure Unsplash/Pixabay for more image options
+4. **📊 Monitor Usage** - Set up monitoring and cost tracking
+5. **🚀 Deploy to Production** - Use the automated GCP Cloud Run deployment
+6. **🔒 Secure Your Setup** - Follow the security guide for production deployment
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## 🔄 Changelog
 
@@ -910,4 +1114,4 @@ python scripts/test-deployment.py --url https://your-service-url
 
 ---
 
-**Made with ❤️ by the MCP Server OpenAI Team** | **Production-Ready Since v0.2.0** 🚀
+**Made with ❤️ for content creators** | **[⭐ Star on GitHub](https://github.com/adrshkr/mcp-server-openai)** | **[📖 Full Documentation](README.md)**

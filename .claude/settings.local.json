@@ -90,7 +90,16 @@
       "Bash(timeout 10 uv run mypy --config-file mypy.ini src/mcp_server_openai/__init__.py)",
       "Bash(timeout 90 uv run pytest -v --tb=no --durations=20)",
       "Bash(timeout:*)",
-      "Bash(.venv/bin/pip install:*)"
+      "Bash(.venv/bin/pip install:*)",
+      "Bash(uvx:*)",
+      "Bash(sudo apt:*)",
+      "Bash(sudo apt install:*)",
+      "Bash(.venv/bin/python:*)",
+      "mcp__voice-mode__converse",
+      "Bash(mv:*)",
+      "Bash(sed:*)",
+      "Bash(gh auth:*)",
+      "Bash(gh auth:*)"
     ],
     "deny": [],
     "ask": [],

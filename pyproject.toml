@@ -5,6 +5,7 @@
   readme = "README.md"
   requires-python = ">=3.10"
   dependencies = [
+    "fastapi",
     "mcp[cli]",
     "httpx",
   "requests",
@@ -18,7 +19,7 @@
     "python-pptx",
     "starlette>=0.37",
     "uvicorn[standard]>=0.29",
-    "uvloop>=0.19.0",
+    'uvloop==0.21.0; platform_system != "Windows"',
     "Jinja2>=3.1.3",
     "websockets>=12.0",
     "slowapi>=0.1.9",
@@ -27,6 +28,7 @@
     "brotli>=1.1.0",
     "psutil>=5.9.0",
     "types-requests>=2.32.4.20250809",
+  "types-psutil>=5.9.5.20240205",
     "superclaude>=3.0.0.2",
 ]
 
@@ -35,6 +37,7 @@
   pythonpath = ["src"]
   testpaths = ["tests"]
   asyncio_mode = "auto"
+  tdd_guard_project_root = "/mnt/c/Users/adars/PycharmProjects/PythonProject/mcp_server_openai"
 
 [build-system]
   requires = ["setuptools","wheel"]
@@ -53,6 +56,10 @@ mcp_server_openai = "mcp_server_openai.__main__:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/mcp_server_openai"]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+uvloop = { version = "0.21.0", markers = "platform_system != 'Windows'" }
 
 [tool.black]
 line-length = 120
@@ -78,6 +85,7 @@ dev = [
     "pytest-cov>=6.2.1",
     "ruff>=0.12.9",
     "types-pyyaml>=6.0.12.20250809",
+    "tdd-guard-pytest>=0.1.1",
 ]
 monitoring = [
     "claude-monitor>=3.1.0",

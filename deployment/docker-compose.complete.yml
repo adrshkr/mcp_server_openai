@@ -1,0 +1,312 @@
+version: '3.8'
+
+services:
+  # Main Unified Content Creator System
+  unified-content-creator:
+    build:
+      context: .
+      dockerfile: Dockerfile.unified
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=production
+      - LOG_LEVEL=INFO
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - PRESENTON_API_KEY=${PRESENTON_API_KEY}
+      - UNSPLASH_API_KEY=${UNSPLASH_API_KEY}
+      - STABLE_DIFFUSION_API_KEY=${STABLE_DIFFUSION_API_KEY}
+      - PIXABAY_API_KEY=${PIXABAY_API_KEY}
+      - BRAVE_SEARCH_API_KEY=${BRAVE_SEARCH_API_KEY}
+    volumes:
+      - ./output:/app/output
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./templates:/app/templates
+    depends_on:
+      - mcp-sequential-thinking
+      - mcp-brave-search
+      - mcp-memory
+      - mcp-filesystem
+      - mcp-research-integration
+      - mcp-content-validation
+      - mcp-advanced-orchestration
+    networks:
+      - mcp-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # MCP Sequential Thinking Server
+  mcp-sequential-thinking:
+    build:
+      context: .
+      dockerfile: Dockerfile.mcp-sequential-thinking
+    ports:
+      - "3001:3001"
+    environment:
+      - PORT=3001
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    networks:
+      - mcp-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # MCP Brave Search Server
+  mcp-brave-search:
+    build:
+      context: .
+      dockerfile: Dockerfile.mcp-brave-search
+    ports:
+      - "3002:3002"
+    environment:
+      - PORT=3002
+      - BRAVE_SEARCH_API_KEY=${BRAVE_SEARCH_API_KEY}
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    networks:
+      - mcp-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # MCP Memory Server
+  mcp-memory:
+    build:
+      context: .
+      dockerfile: Dockerfile.mcp-memory
+    ports:
+      - "3003:3003"
+    environment:
+      - PORT=3003
+      - DATABASE_PATH=/app/data/memory.db
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    networks:
+      - mcp-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3003/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # MCP Filesystem Server
+  mcp-filesystem:
+    build:
+      context: .
+      dockerfile: Dockerfile.mcp-filesystem
+    ports:
+      - "3004:3004"
+    environment:
+      - PORT=3004
+      - BASE_PATH=/app/output
+      - MAX_FILE_SIZE=100MB
+    volumes:
+      - ./output:/app/output
+      - ./data:/app/data
+      - ./logs:/app/logs
+    networks:
+      - mcp-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3004/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # MCP Research Integration Server
+  mcp-research-integration:
+    build:
+      context: .
+      dockerfile: Dockerfile.mcp-research-integration
+    ports:
+      - "3005:3005"
+    environment:
+      - PORT=3005
+      - BRAVE_SEARCH_URL=http://mcp-brave-search:3002
+      - SEQUENTIAL_THINKING_URL=http://mcp-sequential-thinking:3001
+      - MEMORY_URL=http://mcp-memory:3003
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    networks:
+      - mcp-network
+    restart: unless-stopped
+    depends_on:
+      - mcp-brave-search
+      - mcp-sequential-thinking
+      - mcp-memory
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3005/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # MCP Content Validation Server
+  mcp-content-validation:
+    build:
+      context: .
+      dockerfile: Dockerfile.mcp-content-validation
+    ports:
+      - "3006:3006"
+    environment:
+      - PORT=3006
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    networks:
+      - mcp-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3006/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # MCP Advanced Orchestration Server
+  mcp-advanced-orchestration:
+    build:
+      context: .
+      dockerfile: Dockerfile.mcp-advanced-orchestration
+    ports:
+      - "3007:3007"
+    environment:
+      - PORT=3007
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    networks:
+      - mcp-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3007/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Redis for caching (optional)
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - mcp-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # PostgreSQL for advanced data storage (optional)
+  postgres:
+    image: postgres:15-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=unified_content
+      - POSTGRES_USER=unified_user
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-unified_password}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - mcp-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U unified_user -d unified_content"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Nginx for load balancing and reverse proxy (optional)
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - unified-content-creator
+    networks:
+      - mcp-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Prometheus for monitoring (optional)
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    networks:
+      - mcp-network
+    restart: unless-stopped
+
+  # Grafana for visualization (optional)
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    networks:
+      - mcp-network
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+
+volumes:
+  redis_data:
+  postgres_data:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  mcp-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

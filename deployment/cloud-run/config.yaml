@@ -1,0 +1,5 @@
+notifications:
+  enabled: true
+  command_windows: "powershell -Command \"[System.Console]::Beep(800, 200); [System.Console]::Beep(1000, 200); [System.Console]::Beep(1200, 300)\""
+  command_linux: "echo \"{title}: {message}\" && powershell.exe -Command \"[System.Console]::Beep(800, 200); [System.Console]::Beep(1000, 200); [System.Console]::Beep(1200, 300)\""
+  command_darwin: "osascript -e 'beep 3'"

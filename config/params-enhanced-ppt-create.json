@@ -1,0 +1,20 @@
+{
+  "notes": [
+    "Topic: AI Strategy and Implementation Roadmap",
+    "Market analysis shows 40% growth in AI adoption across industries",
+    "Key technologies: Machine Learning, Natural Language Processing, Computer Vision",
+    "Implementation phases: Pilot (3 months), Scale (6 months), Optimize (3 months)",
+    "Success metrics: ROI improvement, User adoption rates, Performance enhancement",
+    "Risk factors: Data privacy concerns, Technical debt accumulation, Change management challenges",
+    "Resource requirements: Skilled AI engineers, Data infrastructure, Training programs",
+    "Timeline: 12-month implementation with quarterly milestones",
+    "Budget allocation: 60% technology, 25% personnel, 15% training and change management"
+  ],
+  "brief": "Create a comprehensive executive presentation outlining our AI strategy implementation plan, including market analysis, technology roadmap, implementation phases, success metrics, and risk mitigation strategies. The presentation should be suitable for board-level stakeholders and potential investors.",
+  "target_length": "12 slides",
+  "model_type": "gpt-4o",
+  "template_preference": "professional",
+  "include_images": false,
+  "language": "English",
+  "client_id": "enterprise_client"
+}

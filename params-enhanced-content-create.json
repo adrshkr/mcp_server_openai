@@ -1,9 +1,0 @@
-{
-  "number_of_slides": 5,
-  "brief": "AI Strategy and Implementation Roadmap",
-  "notes": "Market analysis shows 40% growth in AI adoption\nKey technologies: Machine Learning, NLP, Computer Vision\nImplementation phases: Pilot, Scale, Optimize\nSuccess metrics: ROI, User adoption, Performance improvement\nRisk factors: Data privacy, Technical debt, Change management",
-  "style": "professional",
-  "tone": "persuasive",
-  "audience": "executives",
-  "client_id": "enterprise_client"
-}

@@ -1,0 +1,49 @@
+# Enhanced Document Generation Service Dockerfile
+FROM python:3.11-slim
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    pandoc \
+    texlive-xetex \
+    texlive-fonts-recommended \
+    texlive-fonts-extra \
+    texlive-latex-extra \
+    fonts-liberation \
+    fonts-dejavu \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /app
+
+# Copy requirements and install Python dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Install additional document generation packages
+RUN pip install --no-cache-dir \
+    weasyprint \
+    reportlab \
+    python-docx \
+    markdown \
+    jinja2
+
+# Copy application code
+COPY src/ ./src/
+COPY config/ ./config/
+COPY templates/ ./templates/
+
+# Create necessary directories
+RUN mkdir -p output/documents templates/pandoc templates/html
+
+# Set permissions
+RUN chmod -R 755 /app
+
+# Expose port
+EXPOSE 3007
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:3007/health || exit 1
+
+# Run the service
+CMD ["uvicorn", "src.mcp_server_openai.tools.enhanced_document_generator:app", "--host", "0.0.0.0", "--port", "3007"]
