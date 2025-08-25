@@ -150,6 +150,7 @@ validate_configuration()
 
 ⚠️ **CRITICAL**: If you're setting up this server, please review `README-SECURITY.md` for complete security setup instructions and emergency procedures.
 
+````markdown name=README.md
 ## 🚀 Quick Start
 
 ### Prerequisites
@@ -189,7 +190,7 @@ validate_configuration()
    # Using uv (recommended for faster installs)
    pip install uv
    uv sync
-   
+
    # Or using pip
    pip install -e .
    ```
@@ -198,10 +199,10 @@ validate_configuration()
    ```bash
    # Using uv (recommended - faster and more reliable)
    uv run uvicorn mcp_server_openai.http_server:app --host 0.0.0.0 --port 8080
-   
+
    # Using the optimized startup script (with pre-validation)
    uv run python scripts/startup.py
-   
+
    # Or with make command (enhanced streaming server on port 8000)
    make run-http
    ```
@@ -212,14 +213,25 @@ validate_configuration()
    curl http://localhost:8080/health
    curl http://localhost:8080/health/live
    curl http://localhost:8080/status
-   
+
    # For enhanced streaming server (port 8000, started with make run-http)
    curl http://localhost:8000/health
    curl http://localhost:8000/info
-   
+
    # Run comprehensive tests (adjust port based on which server you're using)
    uv run python scripts/test-deployment.py --url http://localhost:8080 --wait 5
    ```
+
+## 🌐 Deploy to Production
+
+### **Option 1: Google Cloud Run (Recommended)**
+```bash
+# One-command deployment with enterprise security
+./deployment/scripts/deploy-optimized.sh
+
+# Your server will be live at: https://your-service-url
+# Includes: SSL, health checks, auto-scaling, monitoring
+```
 
 ### GCP Cloud Run Deployment (Production)
 
@@ -229,7 +241,7 @@ Deploy with enterprise-grade security and monitoring:
    ```bash
    export PROJECT_ID="your-gcp-project-id"
    gcloud config set project $PROJECT_ID
-   
+
    # Enable required APIs
    gcloud services enable run.googleapis.com
    gcloud services enable secretmanager.googleapis.com
@@ -255,7 +267,7 @@ Deploy with enterprise-grade security and monitoring:
    # Build and push image
    docker build -t gcr.io/$PROJECT_ID/mcp-server-openai .
    docker push gcr.io/$PROJECT_ID/mcp-server-openai
-   
+
    # Deploy with optimized configuration
    sed "s/PROJECT_ID/$PROJECT_ID/g" cloud-run-service.yaml | \
      gcloud run services replace - --region=us-central1
@@ -271,12 +283,12 @@ Deploy with enterprise-grade security and monitoring:
 5. **Verify deployment**
    ```bash
    SERVICE_URL=$(gcloud run services describe mcp-server-openai --region=us-central1 --format="value(status.url)")
-   
+
    # Test health endpoints
    curl $SERVICE_URL/health
    curl $SERVICE_URL/health/live
    curl $SERVICE_URL/status
-   
+
    # Run comprehensive deployment tests
    uv run python scripts/test-deployment.py --url $SERVICE_URL --wait 10
    ```
@@ -330,7 +342,7 @@ make clean
 ### Docker Deployment
 
 ```bash
-# Build and start all services
+# Start all services
 docker-compose -f docker-compose.complete.yml up --build
 
 # View logs  
@@ -339,6 +351,7 @@ docker-compose -f docker-compose.complete.yml logs -f
 # Stop services
 docker-compose -f docker-compose.complete.yml down
 ```
+````
 
 ## 📚 API Reference
 
