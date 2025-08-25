@@ -196,21 +196,29 @@ validate_configuration()
 
 4. **Start the HTTP server**
    ```bash
-   # Using the optimized startup script
-   python scripts/startup.py
+   # Using uv (recommended - faster and more reliable)
+   uv run uvicorn mcp_server_openai.http_server:app --host 0.0.0.0 --port 8080
    
-   # Or directly with uvicorn
-   uvicorn mcp_server_openai.http_server:app --host 0.0.0.0 --port 8080
+   # Using the optimized startup script (with pre-validation)
+   uv run python scripts/startup.py
+   
+   # Or with make command (enhanced streaming server on port 8000)
+   make run-http
    ```
 
 5. **Test the server**
    ```bash
-   # Test health endpoints
+   # For basic Starlette server (port 8080)
+   curl http://localhost:8080/health
    curl http://localhost:8080/health/live
    curl http://localhost:8080/status
    
-   # Run comprehensive tests
-   python scripts/test-deployment.py --url http://localhost:8080
+   # For enhanced streaming server (port 8000, started with make run-http)
+   curl http://localhost:8000/health
+   curl http://localhost:8000/info
+   
+   # Run comprehensive tests (adjust port based on which server you're using)
+   uv run python scripts/test-deployment.py --url http://localhost:8080 --wait 5
    ```
 
 ### GCP Cloud Run Deployment (Production)
@@ -231,6 +239,7 @@ Deploy with enterprise-grade security and monitoring:
 2. **Deploy with automated script** ⚡
    ```bash
    # One-command deployment with validation
+   chmod +x scripts/deploy-optimized.sh
    ./scripts/deploy-optimized.sh
    ```
 
@@ -264,11 +273,12 @@ Deploy with enterprise-grade security and monitoring:
    SERVICE_URL=$(gcloud run services describe mcp-server-openai --region=us-central1 --format="value(status.url)")
    
    # Test health endpoints
+   curl $SERVICE_URL/health
    curl $SERVICE_URL/health/live
    curl $SERVICE_URL/status
    
    # Run comprehensive deployment tests
-   python scripts/test-deployment.py --url $SERVICE_URL --wait 10
+   uv run python scripts/test-deployment.py --url $SERVICE_URL --wait 10
    ```
 
 ### Post-Deployment Monitoring
@@ -281,13 +291,49 @@ After successful deployment:
 - **💰 Cost Monitoring**: Billing dashboard with configured alerts
 - **🚨 Alerting**: Configured for >5% error rate or >90% resource usage
 
+### Make Commands
+
+The project includes several make commands for development and testing:
+
+```bash
+# Quick check (preflight + fast tests + core mypy)
+make check
+
+# Comprehensive check (all tests + full mypy)  
+make check-all
+
+# Run only fast tests (excludes slow/integration/e2e/network)
+make test-fast
+
+# Run all tests including slow ones
+make test-all
+
+# Format code with Black
+make fmt
+
+# Lint with Ruff
+make lint
+
+# Run preflight checks only
+make preflight
+
+# Start enhanced streaming HTTP server (port 8000)
+make run-http
+
+# Start enhanced server with optimizations
+make run-enhanced
+
+# Clean build artifacts
+make clean
+```
+
 ### Docker Deployment
 
 ```bash
 # Build and start all services
 docker-compose -f docker-compose.complete.yml up --build
 
-# View logs
+# View logs  
 docker-compose -f docker-compose.complete.yml logs -f
 
 # Stop services
@@ -556,10 +602,10 @@ The project uses a **fast/comprehensive test separation strategy** optimized for
 
 #### Fast Tests (Development & CI)
 ```bash
-# Fast test suite (26s) - optimized for development
+# Fast test suite (~30s) - optimized for development
 make test-fast
 # OR
-pytest -q --maxfail=1 --durations=10 -m "not slow and not integration and not e2e and not network"
+uv run pytest -q --maxfail=1 --durations=10 -m "not slow and not integration and not e2e and not network"
 ```
 
 **Excludes**: slow, integration, e2e, network tests  
@@ -571,7 +617,7 @@ pytest -q --maxfail=1 --durations=10 -m "not slow and not integration and not e2
 # Full test suite - comprehensive validation
 make test-all
 # OR
-pytest -q --durations=10
+uv run pytest -q --durations=10
 ```
 
 **Includes**: All tests including slow/integration/e2e/network  
@@ -618,12 +664,12 @@ make test           # Fast tests only (alias for test-fast)
 make test-all       # All tests including slow/integration
 
 # With coverage
-pytest --cov=src --cov-report=html
+uv run pytest --cov=src --cov-report=html
 
 # Specific markers
-pytest -m "not slow"          # Exclude slow tests
-pytest -m "integration"       # Run only integration tests
-pytest -k "test_health"       # Run specific test patterns
+uv run pytest -m "not slow"          # Exclude slow tests
+uv run pytest -m "integration"       # Run only integration tests
+uv run pytest -k "test_health"       # Run specific test patterns
 ```
 
 ### Test Coverage
@@ -639,7 +685,7 @@ The system includes comprehensive tests for:
 
 #### Test Run 1: Enhanced PPT Generator
 ```bash
-$ python scripts/test_complete_system.py --category=ppt
+$ uv run python scripts/test_complete_system.py --category=ppt
 
 🧪 Testing Enhanced PPT Generator...
 ✅ Basic PPT generation: PASSED
@@ -662,7 +708,7 @@ $ python scripts/test_complete_system.py --category=ppt
 
 #### Test Run 2: Unified Content Creator (End-to-End)
 ```bash
-$ python scripts/test_complete_system.py --category=unified
+$ uv run python scripts/test_complete_system.py --category=unified
 
 🧪 Testing Unified Content Creator...
 ✅ Content planning workflow: PASSED
@@ -826,6 +872,23 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ### Common Issues
 
+#### Make Command Timeouts
+
+**Problem**: `make check` or `make check-all` times out during MyPy
+```bash
+ERROR: Command timed out after 2m 0.0s
+```
+
+**Solutions**:
+1. **Run components separately**: 
+   ```bash
+   make preflight    # Quick linting and formatting
+   make test-fast    # Fast tests only
+   make mypy-core    # Core files MyPy only (not full)
+   ```
+2. **Skip MyPy for development**: Use `make test-fast` for quick iteration
+3. **Run full MyPy manually**: `uv run mypy src/mcp_server_openai` (may take several minutes)
+
 #### Health Check Failures
 
 **Problem**: Health checks return unhealthy status
@@ -891,7 +954,7 @@ gcloud run logs read mcp-server-openai --region=us-central1
 gcloud secrets describe openai-api-key
 
 # Test deployment validation
-python scripts/test-deployment.py --url https://your-service-url
+uv run python scripts/test-deployment.py --url https://your-service-url
 ```
 
 ### Performance Optimization
